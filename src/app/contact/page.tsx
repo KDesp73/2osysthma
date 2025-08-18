@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import Link from "next/link"
 import { Mail, Phone, Instagram, Facebook } from "lucide-react"
+import Title from "@/components/local/Title"
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -48,9 +49,8 @@ export default function Contact() {
   }
 
   return (
-    <main className="container mx-auto px-4 py-10">
-      <h1 className="text-3xl font-bold mb-6">Επικοινώνησε μαζί μας!</h1>
-
+    <>
+      <Title name="Επικοινώνησε μαζί μας!" />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
         {/* Contact Form */}
         <section>
@@ -123,6 +123,6 @@ export default function Contact() {
           </ul>
         </section>
       </div>
-    </main>
+    </>
   )
 }

@@ -3,13 +3,14 @@ import { getAllPosts } from "@/lib/posts"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "lucide-react"
+import Title from "@/components/local/Title"
 
 export default function BlogPage() {
   const posts = getAllPosts()
 
   return (
-    <main className="container mx-auto px-4 py-10">
-      <h1 className="text-3xl font-bold mb-8">Blog</h1>
+      <>
+      <Title name="Blog" />
       <div className="grid gap-8">
         {posts.map((post) => (
           <Card key={post.slug} className="hover:shadow-lg transition-shadow">
@@ -37,6 +38,6 @@ export default function BlogPage() {
           </Card>
         ))}
       </div>
-    </main>
+    </>
   )
 }

@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useState } from "react";
 import { FolderImages } from "@/lib/images";
+import Title from "./Title";
 
 interface Props {
   folders: FolderImages[];
@@ -12,9 +13,8 @@ export default function Gallery({ folders }: Props) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   return (
-    <main className="container mx-auto p-6">
-      <h1 className="text-4xl font-bold mb-8 text-center">Gallery</h1>
-
+      <>
+      <Title name="Gallery" />
       {folders.map(({ folder, displayName, images }) => (
         <section key={folder} className="mb-12">
           <h2 className="text-2xl font-semibold mb-4">{displayName}</h2>
@@ -53,6 +53,6 @@ export default function Gallery({ folders }: Props) {
           />
         </div>
       )}
-    </main>
+    </>
   );
 }

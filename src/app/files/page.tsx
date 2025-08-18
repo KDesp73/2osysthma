@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { File, Download } from "lucide-react"
 import Link from "next/link"
+import Title from "@/components/local/Title"
 
 const files = [
   {
@@ -23,8 +24,8 @@ const files = [
 
 export default function FilesPage() {
   return (
-    <main className="container mx-auto px-4 py-10">
-      <h1 className="text-3xl font-bold mb-6">Χρήσιμα Αρχεία</h1>
+    <>
+      <Title name="Χρήσιμα Αρχεία" />
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {files.map((file) => (
           <Card key={file.href} className="flex flex-col justify-between">
@@ -46,7 +47,7 @@ export default function FilesPage() {
           </Card>
         ))}
       </div>
-    </main>
+    </>
   )
 }
 
