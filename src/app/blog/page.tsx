@@ -10,7 +10,7 @@ export default function BlogPage() {
 
   return (
       <>
-      <Title name="Blog" />
+      <Title name="To blog μας" />
       <div className="grid gap-8">
         {posts.map((post) => (
           <Card key={post.slug} className="hover:shadow-lg transition-shadow">

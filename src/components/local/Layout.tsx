@@ -4,6 +4,8 @@ import Image from "next/image"
 import Link from "next/link"
 import { ReactNode, useState } from "react"
 import { Menu, X } from "lucide-react"
+import Footer from "./Footer"
+import Anchor from "./Anchor"
 
 interface LayoutProps {
   children: ReactNode
@@ -39,13 +41,11 @@ export default function Layout({ children }: LayoutProps) {
           {/* Desktop links */}
           <nav className="hidden md:flex items-center gap-4">
             {routes.map((route) => (
-              <Link
-                key={route.href}
-                href={route.href}
-                className="text-sm font-medium hover:underline"
-              >
-                {route.name}
-              </Link>
+                <Anchor
+                    key={route.href}
+                    href={route.href}
+                    name={route.name} 
+                />
             ))}
           </nav>
 
@@ -67,7 +67,7 @@ export default function Layout({ children }: LayoutProps) {
                 <Link
                   key={route.href}
                   href={route.href}
-                  className="text-sm font-medium hover:underline"
+                  className="hover:text-[#f08e7f] transition-colors"
                   onClick={() => setMenuOpen(false)}
                 >
                   {route.name}
@@ -84,19 +84,7 @@ export default function Layout({ children }: LayoutProps) {
       </main>
 
       {/* Footer */}
-      <footer className="border-t bg-gray-50">
-        <div className="container mx-auto flex flex-col md:flex-row md:items-center md:justify-between px-4 py-4 text-sm text-gray-600 gap-2 md:gap-0">
-          <p>© {new Date().getFullYear()} {title}. All rights reserved.</p>
-          <div className="flex flex-col md:flex-row gap-2 md:gap-4">
-            <Link href="/privacy" className="hover:underline">
-              Privacy
-            </Link>
-            <Link href="/terms" className="hover:underline">
-              Terms
-            </Link>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }
