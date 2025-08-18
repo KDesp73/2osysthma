@@ -1,0 +1,35 @@
+import { getPostBySlug, getAllPosts } from "@/lib/posts"
+
+interface Post {
+  slug: string
+  title: string
+  date: string
+  description?: string
+  contentHtml: string
+}
+
+interface PostPageProps {
+  params: { slug: string }
+}
+
+export async function generateStaticParams() {
+  const posts = getAllPosts()
+  return posts.map((post) => ({ slug: post.slug }))
+}
+
+export default async function PostPage({ params }: PostPageProps) {
+  const post: Post = await getPostBySlug(params.slug)
+
+  return (
+    <main className="container mx-auto px-4 py-10">
+      {/* Title + Date */}
+      <h1 className="text-4xl font-bold mb-2">{post.title}</h1>
+      <p className="text-sm text-gray-500 mb-8">{post.date}</p>
+
+      {/* Markdown Content */}
+      <article className="prose max-w-none prose-slate">
+        <div dangerouslySetInnerHTML={{ __html: post.contentHtml }} />
+      </article>
+    </main>
+  )
+}
