@@ -14,14 +14,37 @@ export default function Contact() {
     message: "",
   })
 
+  const [status, setStatus] = useState<null | "success" | "error">(null)
+  const [loading, setLoading] = useState(false)
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // TODO: hook this up to /api/contact or an email service
-    console.log("Submitted:", formData)
+    setLoading(true)
+    setStatus(null)
+
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      })
+
+      if (res.ok) {
+        setStatus("success")
+        setFormData({ name: "", email: "", message: "" })
+      } else {
+        setStatus("error")
+      }
+    } catch (error) {
+      console.error("Submit error:", error)
+      setStatus("error")
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -56,10 +79,17 @@ export default function Contact() {
               onChange={handleChange}
               required
             />
-            <Button type="submit" className="w-full">
-              Send Message
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? "Sending..." : "Send Message"}
             </Button>
           </form>
+
+          {status === "success" && (
+            <p className="mt-2 text-green-600">Το μήνυμά σας στάλθηκε επιτυχώς!</p>
+          )}
+          {status === "error" && (
+            <p className="mt-2 text-red-600">Σφάλμα κατά την αποστολή. Προσπαθήστε ξανά.</p>
+          )}
         </section>
 
         {/* Contact Links */}

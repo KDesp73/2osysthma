@@ -16,7 +16,7 @@ const routes = [
     },
     {
         name: "Εικόνες",
-        href: "/images"
+        href: "/gallery"
     },
     {
         name: "Blog",
