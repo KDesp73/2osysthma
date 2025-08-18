@@ -6,6 +6,29 @@ interface LayoutProps {
   children: ReactNode
 }
 
+const routes = [
+    {
+        name: "Τμήματα",
+        href: "/"
+    },
+    {
+        name: "Χρήσιμα Αρχεία",
+        href: "/files"
+    },
+    {
+        name: "Εικόνες",
+        href: "/images"
+    },
+    {
+        name: "Blog",
+        href: "/blog"
+    },
+    {
+        name: "Επικοινωνία",
+        href: "/contact"
+    },
+];
+
 export default function Layout({ children }: LayoutProps) {
     const title = "2ο Σύστημα Προσκόπων Κιλκίς"
 
@@ -18,21 +41,15 @@ export default function Layout({ children }: LayoutProps) {
           {title}
           </Link>
           <nav className="flex items-center gap-4">
-            <Link href="/contact" className="text-sm font-medium hover:underline">
-              Contact
-            </Link>
-            <Link href="/files" className="text-sm font-medium hover:underline">
-              Useful Files
-            </Link>
-            <Link href="/personnel" className="text-sm font-medium hover:underline">
-              Personnel
-            </Link>
-            <Link href="/blog" className="text-sm font-medium hover:underline">
-              Blog
-            </Link>
-            <Link href="/images" className="text-sm font-medium hover:underline">
-              Images
-            </Link>
+            {routes.map((route) => (
+                <Link
+                  key={route.href}
+                  href={route.href}
+                  className="text-sm font-medium hover:underline"
+                >
+                  {route.name}
+                </Link>
+              ))}
           </nav>
         </div>
       </header>
