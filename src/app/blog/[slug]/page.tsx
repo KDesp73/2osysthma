@@ -1,24 +1,17 @@
-import { getPostBySlug, getAllPosts } from "@/lib/posts"
-
-interface Post {
-  slug: string
-  title: string
-  date: string
-  description?: string
-  contentHtml: string
-}
+import { Post, getPostBySlug, getAllPosts } from "@/lib/posts"
 
 interface PostPageProps {
-  params: { slug: string }
+    params: Promise<{ slug: string }>;
 }
 
-export async function generateStaticParams() {
+export function generateStaticParams() {
   const posts = getAllPosts()
   return posts.map((post) => ({ slug: post.slug }))
 }
 
 export default async function PostPage({ params }: PostPageProps) {
-  const post: Post = await getPostBySlug(params.slug)
+    const { slug } = await params;
+    const post: Post = await getPostBySlug(slug);
 
   return (
     <main className="container mx-auto px-4 py-10">

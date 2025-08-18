@@ -2,7 +2,7 @@ import Link from "next/link"
 import { getAllPosts } from "@/lib/posts"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Calendar, Heading1 } from "lucide-react"
+import { Calendar } from "lucide-react"
 
 export default function BlogPage() {
   const posts = getAllPosts()
