@@ -30,8 +30,8 @@ export default function Layout({ children }: LayoutProps) {
         <div className="container mx-auto flex items-center justify-between px-4 py-2">
           <Link href="/" className="flex items-center">
             <Image
-              src="/logo.jpg"
-              alt="Logo"
+              src="/logo.webp"
+              alt={title}
               width={160}
               height={40}
               priority
