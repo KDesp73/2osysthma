@@ -6,7 +6,7 @@ import Link from "next/link"
 const files = [
   {
     name: "Ατομικό Δελτίο Υγείας",
-    description: "Final project report in PDF format.",
+    description: "",
     href: "/content/files/deltio-ygeias.pdf",
   },
   {
