@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Post, getPostBySlug, getAllPosts } from "@/lib/posts";
 import { Calendar, ChevronLeft, User } from "lucide-react";
 import Link from "next/link";
+import styles from "@/styles/post.module.css";
 
 interface PostPageProps {
   params: Promise<{ slug: string }>;
@@ -47,7 +48,7 @@ export default async function PostPage({ params }: PostPageProps) {
         </div>
 
         {/* Markdown Content */}
-        <article className="prose max-w-none prose-slate">
+        <article className={styles.article}>
           <div dangerouslySetInnerHTML={{ __html: post.contentHtml }} />
         </article>
       </main>

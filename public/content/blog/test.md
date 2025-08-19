@@ -29,7 +29,6 @@ Welcome to this **Markdown test post**! This post demonstrates many Markdown fea
 - **Bold text**
 - *Italic text*
 - ***Bold + Italic***
-- ~~Strikethrough~~
 
 ---
 
