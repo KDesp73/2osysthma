@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import Link from "next/link"
-import { Mail, Phone, Instagram, Facebook } from "lucide-react"
+import { Mail, Phone, Instagram, Facebook, Pin } from "lucide-react"
 import Title from "@/components/local/Title"
 
 export default function Contact() {
@@ -100,6 +100,12 @@ export default function Contact() {
               <Mail className="h-5 w-5 text-gray-500" />
               <a href="mailto:example@email.com" className="hover:underline">
                 example@email.com
+              </a>
+            </li>
+            <li className="flex items-center gap-2">
+              <Pin className="h-5 w-5 text-gray-500" />
+              <a href="https://maps.app.goo.gl/riqzmUYBYEczAer39" className="hover:underline">
+                Παπαγιαννάκου 1, Κιλκίς, 61100
               </a>
             </li>
             <li className="flex items-center gap-2">

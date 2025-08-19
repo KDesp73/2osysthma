@@ -120,3 +120,7 @@
     @apply bg-background text-foreground;
   }
 }
+
+* {
+    --accent: #0e1b8d;
+}
