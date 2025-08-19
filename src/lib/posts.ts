@@ -11,6 +11,8 @@ export interface Post {
     title: string
     date: string
     description?: string
+    author?: string
+    tags: [string]
     contentHtml: string
 }
 
@@ -19,6 +21,8 @@ interface FrontMatter {
     title: string
     date: string
     description?: string
+    author?: string
+    tags: [string]
 }
 
 export function getAllPosts(): Post[] {
@@ -35,6 +39,8 @@ export function getAllPosts(): Post[] {
             title: data.title,
             date: data.date,
             description: data.description,
+            author: data.author,
+            tags: data.tags
         }
     }) as Post[]
 }
@@ -51,6 +57,8 @@ export async function getPostBySlug(slug: string): Promise<Post> {
         title: data.title,
         date: data.date,
         description: data.description,
+        author: data.author,
+        tags: data.tags,
         contentHtml,
     }
 }
