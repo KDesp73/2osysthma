@@ -13,7 +13,7 @@ interface LayoutProps {
 
 const routes = [
   { name: "Τμήματα", href: "/depts" },
-  { name: "Χρήσιμα Αρχεία", href: "/files" },
+  { name: "Χρήσιμα", href: "/useful" },
   { name: "Εικόνες", href: "/gallery" },
   { name: "Blog", href: "/blog" },
   { name: "Επικοινωνία", href: "/contact" },

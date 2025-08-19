@@ -9,6 +9,7 @@ export default function Footer() {
           &copy; {new Date().getFullYear()} 2ο Σύστημα Προσκόπων Κιλκίς. All rights reserved.
         </p>
 
+        {/*
         <nav className="flex space-x-6 text-sm text-gray-600">
           <a
             href="/"
@@ -27,6 +28,7 @@ export default function Footer() {
             Terms of Service
           </a>
         </nav>
+        */}
         <SocialButtons />
       </div>
     </footer>
