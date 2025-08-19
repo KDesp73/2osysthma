@@ -32,7 +32,7 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
         {allTags.map((t) => (
           <Link key={t} href={`/blog?tag=${t}`}>
             <Badge variant={tag === t ? "default" : "outline"}>
-              {tag}
+              {t}
             </Badge>
           </Link>
         ))}
