@@ -1,3 +1,5 @@
+import Banner from "@/components/local/Banner";
+
 export default function Departments() {
   const departments = [
     {
@@ -34,16 +36,7 @@ export default function Departments() {
   return (
     <div className="p-6">
       {/* Banner */}
-      <div className="relative w-full h-48 rounded-2xl overflow-hidden shadow-lg mb-8">
-        <img
-          src="/banner.jpg"
-          alt="Banner"
-          className="object-cover w-full h-full"
-        />
-        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-          <h1 className="text-3xl md:text-4xl font-bold text-white">Τα Τμήματά μας</h1>
-        </div>
-      </div>
+      <Banner title="Τα τμήματά μας"/>
 
       {/* Departments List */}
       <div className="grid md:grid-cols-2 gap-6 mb-12">
