@@ -3,7 +3,7 @@ title: "Markdown Feature Test"
 date: "2025-08-18"
 description: "A test post covering many Markdown features for display testing."
 author: "kostas"
-tags: ["one", "two", "three"]
+tags: ["one", "two"]
 ---
 
 # Introduction
