@@ -69,9 +69,11 @@ export default function Departments() {
 
       {/* System Leaders */}
       <div className="bg-gray-100 rounded-xl p-6 shadow-inner">
-        <h2 className="text-2xl font-semibold mb-2">Αρχηγό & Υπαρχηγούς Συστήματος</h2>
-        <p className="text-gray-800 mb-1">{systemLeaders.chief}</p>
-        <p className="text-gray-800">{systemLeaders.deputies.join(", ")}</p>
+        <h2 className="text-2xl font-semibold mb-2">Αρχηγός & Υπαρχηγοί Συστήματος</h2>
+        <ul className="list-disc list-inside text-gray-700 mt-1">
+          <li className="text-gray-800 mb-1">{systemLeaders.chief}</li>
+          <li className="text-gray-800">{systemLeaders.deputies.join(", ")}</li>
+        </ul>
       </div>
     </div>
   );
