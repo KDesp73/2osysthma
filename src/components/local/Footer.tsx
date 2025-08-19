@@ -11,7 +11,7 @@ export default function Footer() {
 
         <nav className="flex space-x-6 text-sm text-gray-600">
           <a
-            href="https://www.freeprivacypolicy.com/live/ff973a26-6553-412d-80cf-ff3f4b406744"
+            href="/"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-[#f08e7f] transition-colors"
@@ -19,7 +19,7 @@ export default function Footer() {
             Privacy Policy
           </a>
           <a
-            href="https://www.freeprivacypolicy.com/live/487bdc5b-283f-4acc-b7d8-20f6821ca5fd"
+            href="/"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-[#f08e7f] transition-colors"
