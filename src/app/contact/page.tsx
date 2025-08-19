@@ -98,8 +98,8 @@ export default function Contact() {
           <ul className="space-y-3 text-gray-700">
             <li className="flex items-center gap-2">
               <Mail className="h-5 w-5 text-gray-500" />
-              <a href="mailto:example@email.com" className="hover:underline">
-                example@email.com
+              <a href="mailto:2p_kilkis@sep.org.gr" className="hover:underline">
+                2p_kilkis@sep.org.gr
               </a>
             </li>
             <li className="flex items-center gap-2">
