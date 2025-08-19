@@ -6,12 +6,13 @@ import { Calendar, User } from "lucide-react"
 import Title from "@/components/local/Title"
 import { Badge } from "@/components/ui/badge"
 
-export default function BlogPage({ searchParams }: { searchParams: { tag?: string } }) {
+export default async function BlogPage({ searchParams }: { searchParams: Promise<{ tag?: string }> }) {
   const posts = getAllPosts()
+  const { tag } = await searchParams;
 
   // Filter posts by tag if query param exists
-  const filteredPosts = searchParams.tag
-    ? posts.filter((post) => post.tags.includes(searchParams.tag as string))
+  const filteredPosts = tag
+    ? posts.filter((post) => post.tags.includes(tag as string))
     : posts
 
   // Collect all unique tags
@@ -24,13 +25,13 @@ export default function BlogPage({ searchParams }: { searchParams: { tag?: strin
       {/* Tag Filter Bar */}
       <div className="flex flex-wrap gap-2 mb-6">
         <Link href="/blog">
-          <Badge variant={searchParams.tag ? "outline" : "default"}>
+          <Badge variant={tag ? "outline" : "default"}>
             All
           </Badge>
         </Link>
-        {allTags.map((tag) => (
-          <Link key={tag} href={`/blog?tag=${tag}`}>
-            <Badge variant={searchParams.tag === tag ? "default" : "outline"}>
+        {allTags.map((t) => (
+          <Link key={t} href={`/blog?tag=${t}`}>
+            <Badge variant={tag === t ? "default" : "outline"}>
               {tag}
             </Badge>
           </Link>
