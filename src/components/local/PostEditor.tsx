@@ -1,6 +1,4 @@
-"use client";
-
-import { useState, ChangeEvent, FormEvent } from "react";
+import { ChangeEvent, FormEvent, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { 
@@ -31,6 +29,7 @@ import "@mdxeditor/editor/style.css";
 
 import "@/styles/post.module.css"
 
+
 function MyToolbar() {
     return (
         <DiffSourceToggleWrapper>
@@ -46,25 +45,29 @@ function MyToolbar() {
 }
 
 const PLUGINS = [
-  toolbarPlugin({ toolbarContents: () => <MyToolbar /> }),
-  listsPlugin(),
-  quotePlugin(),
-  headingsPlugin({ allowedHeadingLevels: [1, 2, 3] }),
-  linkPlugin(),
-  linkDialogPlugin(),
-  imagePlugin({
-    imageAutocompleteSuggestions: ['https://via.placeholder.com/150', 'https://via.placeholder.com/150'],
-    imageUploadHandler: async () => Promise.resolve('https://picsum.photos/200/300')
-  }),
-  tablePlugin(),
-  thematicBreakPlugin(),
-  codeBlockPlugin({ defaultCodeBlockLanguage: '' }),
-  codeMirrorPlugin({ codeBlockLanguages: { js: 'JavaScript', css: 'CSS', txt: 'Plain Text', tsx: 'TypeScript', '': 'Unspecified' } }),
-  diffSourcePlugin({ viewMode: 'rich-text', diffMarkdown: 'boo' }),
-  markdownShortcutPlugin()
+    toolbarPlugin({ toolbarContents: () => <MyToolbar /> }),
+        listsPlugin(),
+    quotePlugin(),
+    headingsPlugin({ allowedHeadingLevels: [1, 2, 3] }),
+    linkPlugin(),
+    linkDialogPlugin(),
+    imagePlugin({
+        imageAutocompleteSuggestions: ['https://via.placeholder.com/150', 'https://via.placeholder.com/150'],
+        imageUploadHandler: async () => Promise.resolve('https://picsum.photos/200/300')
+    }),
+    tablePlugin(),
+    thematicBreakPlugin(),
+    codeBlockPlugin({ defaultCodeBlockLanguage: '' }),
+    codeMirrorPlugin({ codeBlockLanguages: { js: 'JavaScript', css: 'CSS', txt: 'Plain Text', tsx: 'TypeScript', '': 'Unspecified' } }),
+    diffSourcePlugin({ viewMode: 'rich-text', diffMarkdown: 'boo' }),
+    markdownShortcutPlugin()
 ]
 
-export default function AdminDashboard() {
+
+export default function PostEditor() {
+  const [error, setError] = useState<boolean>(false);
+  const [message, setMessage] = useState<string | null>(null);
+
   const [blogData, setBlogData] = useState({
     title: "",
     description: "",
@@ -74,11 +77,9 @@ export default function AdminDashboard() {
     tags: "",
   });
 
-  const [error, setError] = useState<boolean>(false);
-  const [message, setMessage] = useState<string | null>(null);
 
   const handleBlogChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setBlogData({ ...blogData, [e.target.name]: e.target.value });
+      setBlogData({ ...blogData, [e.target.name]: e.target.value });
   };
 
   const handleContentChange = (value: string) => {
@@ -100,18 +101,25 @@ export default function AdminDashboard() {
       const data = await res.json();
       setMessage(data.success ? "Blog created successfully!" : "Error creating blog");
       setError(!data.success);
+      if(data.success){
+          setBlogData({
+              title: "",
+              description: "",
+              author: "",
+              date: new Date().toISOString().split("T")[0],
+              content: "",
+              tags: "",
+          });
+      }
     } catch {
       setMessage("Error creating blog");
       setError(true);
     }
   };
 
-  return (<>
-      <header className="mb-8">
-        <h1 className="text-3xl font-bold text-center">Admin Dashboard</h1>
-      </header>
 
-      <section className="bg-white rounded-xl shadow p-6 space-y-4 max-w-5xl mx-auto">
+
+    return (<>
         <h2 className="text-2xl font-semibold">Create Blog Post</h2>
 
         <form onSubmit={handleBlogSubmit} className="flex flex-col gap-4">
@@ -172,7 +180,6 @@ export default function AdminDashboard() {
         </form>
 
         {message && <p className={`text-${(error) ? "red" : "green"}-600 font-medium mt-4`}>{message}</p>}
-      </section>
-    </>
-  );
+
+    </>);
 }

@@ -6,6 +6,7 @@ import { ReactNode, useState } from "react"
 import { Menu, X } from "lucide-react"
 import Footer from "./Footer"
 import Anchor from "./Anchor"
+import { usePathname } from "next/navigation"
 
 interface LayoutProps {
   children: ReactNode
@@ -22,6 +23,12 @@ const routes = [
 export default function Layout({ children }: LayoutProps) {
   const title = "2ο Σύστημα Προσκόπων Κιλκίς"
   const [menuOpen, setMenuOpen] = useState(false)
+
+  const path = usePathname();
+  const nolayout = ["/admin/login", "/admin/dashboard"];
+  if(nolayout.indexOf(path) != -1) {
+    return (<>{children}</>);
+  }
 
   return (
     <div className="flex min-h-screen flex-col">
