@@ -11,9 +11,8 @@ export async function GET() {
 export async function DELETE(req: NextRequest) {
     try {
         const body = await req.json();
-        let { title, slug } = body;
-
-        if(!slug) slug = createSlug(title);
+        const { title } = body;
+        const slug = createSlug(title);
 
         const gh = new GithubHelper("KDesp73", "2osysthma");
 
