@@ -26,23 +26,28 @@ interface FrontMatter {
 }
 
 export function getAllPosts(): Post[] {
-    const fileNames = fs.readdirSync(postsDirectory)
+  const fileNames = fs.readdirSync(postsDirectory)
 
-    return fileNames.map((fileName) => {
-        const slug = fileName.replace(/\.md$/, "")
-        const filePath = path.join(postsDirectory, fileName)
-        const fileContents = fs.readFileSync(filePath, "utf8")
-        const { data } = matter(fileContents) as unknown as { data: FrontMatter }
+  const posts = fileNames.map((fileName) => {
+    const slug = fileName.replace(/\.md$/, "")
+    const filePath = path.join(postsDirectory, fileName)
+    const fileContents = fs.readFileSync(filePath, "utf8")
+    const { data } = matter(fileContents) as unknown as { data: FrontMatter }
 
-        return {
-            slug,
-            title: data.title,
-            date: data.date,
-            description: data.description,
-            author: data.author,
-            tags: data.tags
-        }
-    }) as Post[]
+    return {
+      slug,
+      title: data.title,
+      date: data.date,
+      description: data.description,
+      author: data.author,
+      tags: data.tags,
+    }
+  }) as Post[]
+
+  // Sort by date descending
+  return posts.sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  )
 }
 
 
