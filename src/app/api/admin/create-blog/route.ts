@@ -1,62 +1,126 @@
 import { NextResponse } from "next/server";
 import matter from "gray-matter";
+import jwt from "jsonwebtoken";
+import fetch from "node-fetch";
 
-const GITHUB_REPO = "KDesp73/2osysthma";
+const APP_ID = process.env.GITHUB_APP_ID!;
+const PRIVATE_KEY = process.env.GITHUB_PRIVATE_KEY!.replace(/\\n/g, "\n");
+const REPO_OWNER = process.env.GITHUB_REPO_OWNER!;
+const REPO_NAME = process.env.GITHUB_REPO_NAME!;
 const BRANCH = "main";
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 
 export async function POST(req: Request) {
+  try {
     const body = await req.json();
     const { title, description, author, content, tags } = body;
 
     if (!title || !content) {
-        return NextResponse.json(
-            { success: false, error: "Missing title or content" },
-            { status: 400 }
-        );
+      return NextResponse.json(
+        { success: false, error: "Missing title or content" },
+        { status: 400 }
+      );
     }
 
+    // Create slug for filename
     const slug = title
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)+/g, "");
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)+/g, "");
 
     const frontmatter = matter.stringify(content, {
-        title,
-        description,
-        author,
-        date: new Date().toISOString().split("T")[0],
-        tags,
-        slug,
+      title,
+      description,
+      author,
+      date: new Date().toISOString().split("T")[0],
+      tags,
+      slug,
     });
 
-    const filePath = `public/content/blog/${slug}.md`;
+    // 1️⃣ Generate JWT for the GitHub App
+    const now = Math.floor(Date.now() / 1000);
+    const payload = {
+      iat: now,
+      exp: now + 60, // 1 minute expiration
+      iss: APP_ID,
+    };
+    const appJwt = jwt.sign(payload, PRIVATE_KEY, { algorithm: "RS256" });
 
-    console.log(GITHUB_TOKEN);
-    const response = await fetch(
-        `https://api.github.com/repos/${GITHUB_REPO}/contents/${filePath}`,
-            {
-            method: "PUT",
-            headers: {
-                Authorization: `Bearer ${GITHUB_TOKEN}`,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                message: `Add blog post: ${title}`,
-                content: Buffer.from(frontmatter).toString("base64"),
-                branch: BRANCH,
-            }),
-        }
+    // 2️⃣ Get installation token
+    // First, get the installation ID
+    const installationsRes = await fetch(
+      `https://api.github.com/app/installations`,
+      {
+        headers: {
+          Authorization: `Bearer ${appJwt}`,
+          Accept: "application/vnd.github+json",
+        },
+      }
+    );
+    const installations = await installationsRes.json();
+    if (!installations.length) {
+      throw new Error("No installations found for this app");
+    }
+    const installationId = installations[0].id;
+
+    // Generate installation access token
+    const tokenRes = await fetch(
+      `https://api.github.com/app/installations/${installationId}/access_tokens`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${appJwt}`,
+          Accept: "application/vnd.github+json",
+        },
+      }
+    );
+    const tokenData = await tokenRes.json();
+    const installationToken = tokenData.token;
+
+    // 3️⃣ Upload file via GitHub API
+    const filePath = `content/blog/${slug}.md`;
+
+    // Check if file exists to get SHA
+    let sha: string | undefined;
+    const checkRes = await fetch(
+      `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${filePath}?ref=${BRANCH}`,
+      {
+        headers: {
+          Authorization: `Bearer ${installationToken}`,
+          Accept: "application/vnd.github+json",
+        },
+      }
+    );
+    if (checkRes.ok) {
+      const checkData = await checkRes.json();
+      sha = checkData.sha;
+    }
+
+    const putRes = await fetch(
+      `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${filePath}`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${installationToken}`,
+          Accept: "application/vnd.github+json",
+        },
+        body: JSON.stringify({
+          message: `Add blog post: ${title}`,
+          content: Buffer.from(frontmatter).toString("base64"),
+          branch: BRANCH,
+          sha,
+        }),
+      }
     );
 
-    if (!response.ok) {
-        const err = await response.json();
-        console.log("Github commit failed: ", err.message);
-        return NextResponse.json(
-            { success: false, error: err.message || "GitHub commit failed" },
-            { status: 500 }
-        );
+    if (!putRes.ok) {
+      const err = await putRes.json();
+      console.error(err);
+      throw new Error("GitHub commit failed");
     }
 
     return NextResponse.json({ success: true, slug });
+  } catch (err: any) {
+    console.error(err);
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+  }
 }
