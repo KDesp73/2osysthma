@@ -5,41 +5,16 @@ import { useState, useEffect } from "react";
 import { FileText, Image, Users, Settings } from "lucide-react";
 
 export default function AdminDashboard() {
-  const [authenticated, setAuthenticated] = useState<boolean | null>(null);
   const router = useRouter();
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const res = await fetch("/api/admin/check-token");
-        if (!res.ok) {
-          router.push("/admin/login");
-          return;
-        }
-        setAuthenticated(true);
-      } catch {
-        router.push("/admin/login");
-      }
-    };
-    checkAuth();
-  }, [router]);
-
-  if (authenticated === null)
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-600"></div>
-      </div>
-    );
-
   const operations = [
-    { label: "Posts", icon: <FileText className="h-8 w-8 mb-2" />, path: "/admin/dasboard/posts" },
+    { label: "Posts", icon: <FileText className="h-8 w-8 mb-2" />, path: "/admin/dashboard/posts" },
     { label: "Images", icon: <Image className="h-8 w-8 mb-2" />, path: "/admin/dashboard/images" },
     { label: "Users", icon: <Users className="h-8 w-8 mb-2" />, path: "/admin/dashboard/users" },
     { label: "Settings", icon: <Settings className="h-8 w-8 mb-2" />, path: "/admin/dashboard/settings" },
   ];
 
-  return (
-    <div className="flex flex-col items-center justify-start min-h-screen bg-gray-50 py-8">
+  return (<>
       <header className="mb-12">
         <h1 className="text-3xl font-bold text-center">Admin Dashboard</h1>
       </header>
@@ -56,6 +31,6 @@ export default function AdminDashboard() {
           </button>
         ))}
       </section>
-    </div>
+    </>
   );
 }

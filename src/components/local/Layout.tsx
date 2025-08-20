@@ -7,6 +7,7 @@ import { Menu, X } from "lucide-react"
 import Footer from "./Footer"
 import Anchor from "./Anchor"
 import { usePathname } from "next/navigation"
+import AdminLayout from "./AdminLayout"
 
 interface LayoutProps {
   children: ReactNode
@@ -26,8 +27,11 @@ export default function Layout({ children }: LayoutProps) {
 
   const path = usePathname();
   if (path.startsWith("/admin/")) {
-      return <>{children}</>;
-  }
+      if(path === "/admin/login")
+          return <>{children}</>;
+
+      return <AdminLayout>{children}</AdminLayout>
+  } 
 
   return (
     <div className="flex min-h-screen flex-col">
