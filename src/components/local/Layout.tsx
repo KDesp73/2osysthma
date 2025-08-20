@@ -25,9 +25,8 @@ export default function Layout({ children }: LayoutProps) {
   const [menuOpen, setMenuOpen] = useState(false)
 
   const path = usePathname();
-  const nolayout = ["/admin/login", "/admin/dashboard"];
-  if(nolayout.indexOf(path) != -1) {
-    return (<>{children}</>);
+  if (path.startsWith("/admin/")) {
+      return <>{children}</>;
   }
 
   return (

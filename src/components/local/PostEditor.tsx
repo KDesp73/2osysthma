@@ -120,7 +120,7 @@ export default function PostEditor() {
 
 
     return (<>
-        <h2 className="text-2xl font-semibold">Create Blog Post</h2>
+        <h2 className="text-2xl font-semibold mb-4">Create Blog Post</h2>
 
         <form onSubmit={handleBlogSubmit} className="flex flex-col gap-4">
           <Input

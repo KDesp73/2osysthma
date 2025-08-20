@@ -44,7 +44,7 @@ export class GithubHelper {
     constructor(owner: string, repo: string, branch?: string) {
         this.owner = owner;
         this.repo = repo;
-        if(branch !== 'undefined' && branch !== null) {
+        if(branch === 'undefined' ||branch === null) {
             this.branch = branch!;
         }
     }
@@ -132,8 +132,10 @@ export class GithubHelper {
     async removeFile(remotePath: string, commitMsg: string): Promise<Response> {
         const installationToken = await this.getInstallationToken();
 
+        const url = `https://api.github.com/repos/${this.owner}/${this.repo}/contents/${remotePath}?ref=${this.branch}`;
+            console.log(url);
         const checkRes = await fetch(
-            `https://api.github.com/repos/${this.owner}/${this.repo}/contents/${remotePath}?ref=${this.branch}`,
+            url,
                 {
                 headers: {
                     Authorization: `Bearer ${installationToken}`,
