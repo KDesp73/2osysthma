@@ -66,12 +66,12 @@ const PLUGINS = [
 
 export default function AdminDashboard() {
   const [blogData, setBlogData] = useState({
-    title: "title",
-    description: "desc",
-    author: "author",
+    title: "",
+    description: "",
+    author: "",
     date: new Date().toISOString().split("T")[0],
-    content: "content",
-    tags: "tag",
+    content: "",
+    tags: "",
   });
 
   const [error, setError] = useState<boolean>(false);
