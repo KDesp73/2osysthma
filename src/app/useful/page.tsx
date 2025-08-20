@@ -15,7 +15,7 @@ const files = [
 const links = [
   {
     name: "Σώμα Ελλήνων Προσκόπων",
-    description: "Η επίσημη ιστοσελίδα του ΣΕΠ",
+    description: "Η επίσημη ιστοσελίδα του Σώματος Ελλήνων Προσκόπων",
     href: "https://www.sep.org.gr/el/normal/home",
   },
   {

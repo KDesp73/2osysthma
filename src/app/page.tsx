@@ -12,9 +12,12 @@ export default function Home() {
 
       {/* Title & Description */}
       <div className="max-w-2xl text-center my-8 px-4">
-        <h1 className="text-3xl font-bold mb-4">Καλωσήρθες</h1>
+        <h1 className="text-3xl font-bold mb-4">Ready for life</h1>
         <p className="text-lg text-gray-700">
-            Lorem ipsum dolor sit amet consectetur, adipisicing elit. Nobis incidunt voluptas magnam perspiciatis dolorum facere ut doloribus, eaque debitis. Ipsam iste corrupti quibusdam recusandae laudantium reiciendis vero praesentium mollitia ratione.
+            Χτίσε το μέλλον που ονειρεύεσαι. 
+        </p>
+        <p className="text-lg text-gray-700">
+            Eφοδιάζοντας τους νέους με ικανότητες και αξίες για να καθορίσουν την ζωή τους
         </p>
       </div>
 
