@@ -9,6 +9,41 @@ const REPO_OWNER = process.env.GITHUB_REPO_OWNER!;
 const REPO_NAME = process.env.GITHUB_REPO_NAME!;
 const BRANCH = "main";
 
+type GitHubFileCheckResponse = {
+  sha: string;
+  url: string;
+  content: string;
+  encoding: string;
+};
+
+type GitHubInstallationTokenResponse = {
+  token: string;
+  expires_at: string;
+  permissions: Record<string, string>;
+  repository_selection: string;
+};
+
+type GitHubInstallation = {
+  id: number;
+  account: {
+    login: string;
+    id: number;
+    type: string; // "User" or "Organization"
+  };
+  repository_selection: string;
+  access_tokens_url: string;
+  repositories_url: string;
+  app_id: number;
+  target_id: number;
+  target_type: string;
+  permissions: Record<string, string>;
+  events: string[];
+  created_at: string;
+  updated_at: string;
+  single_file_name: string | null;
+  has_multiple_single_files?: boolean;
+};
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -56,7 +91,7 @@ export async function POST(req: Request) {
         },
       }
     );
-    const installations = await installationsRes.json();
+    const installations = await installationsRes.json() as GitHubInstallation[];
     if (!installations.length) {
       throw new Error("No installations found for this app");
     }
@@ -73,7 +108,7 @@ export async function POST(req: Request) {
         },
       }
     );
-    const tokenData = await tokenRes.json();
+    const tokenData = await tokenRes.json() as GitHubInstallationTokenResponse;
     const installationToken = tokenData.token;
 
     // 3️⃣ Upload file via GitHub API
@@ -91,7 +126,7 @@ export async function POST(req: Request) {
       }
     );
     if (checkRes.ok) {
-      const checkData = await checkRes.json();
+      const checkData = await checkRes.json() as GitHubFileCheckResponse;
       sha = checkData.sha;
     }
 
@@ -119,8 +154,8 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ success: true, slug });
-  } catch (err: any) {
+  } catch (err) {
     console.error(err);
-    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: (err as Error).message }, { status: 500 });
   }
 }
