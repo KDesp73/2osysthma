@@ -66,7 +66,7 @@ export async function POST(req: Request) {
       title,
       description,
       author,
-      date: new Date().toISOString().split("T")[0],
+      date: new Date().toISOString(), // e.g. "2025-08-20T13:45:30.123Z"
       tags,
       slug,
     });
