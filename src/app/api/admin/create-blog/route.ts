@@ -77,7 +77,7 @@ export async function POST(req: Request) {
     const installationToken = tokenData.token;
 
     // 3️⃣ Upload file via GitHub API
-    const filePath = `content/blog/${slug}.md`;
+    const filePath = `public/content/blog/${slug}.md`;
 
     // Check if file exists to get SHA
     let sha: string | undefined;
