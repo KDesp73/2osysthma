@@ -47,7 +47,9 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
                 <h1 className="text-2xl font-semibold">{post.title}</h1>
                 <div className="flex items-center text-sm text-gray-500 gap-2">
                   <Calendar className="h-4 w-4" />
-                  <time dateTime={post.date}>{post.date}</time>
+                  <time dateTime={post.date}>
+                  {post.date.split("T")[0]}
+                  </time>
                   {post.author && (
                     <>
                       <User className="h-4 w-4" />

@@ -33,7 +33,7 @@ export default async function PostPage({ params }: PostPageProps) {
         {/* Meta row: date, author, tags */}
         <div className="flex flex-wrap items-center gap-3 mb-8 text-sm text-gray-500">
           <span className="flex items-center gap-1">
-            <Calendar className="h-4 w-4" /> {post.date}
+            <Calendar className="h-4 w-4" /> {post.date.split("T")[0]}
           </span>
           <span className="flex items-center gap-1">
             <User className="h-4 w-4" /> {post.author}
