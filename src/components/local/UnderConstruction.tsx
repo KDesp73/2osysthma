@@ -16,7 +16,7 @@ export default function UnderConstruction() {
         </svg>
         <h1 className="text-2xl font-bold mb-2">Page Under Construction</h1>
         <p className="text-gray-600">
-          We're working hard to bring this page to life. Check back soon!
+          We&apos;re working hard to bring this page to life. Check back soon!
         </p>
       </div>
     </div>

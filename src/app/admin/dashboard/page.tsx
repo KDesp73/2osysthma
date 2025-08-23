@@ -1,7 +1,6 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
 import { FileText, Image, Users, Settings } from "lucide-react";
 
 export default function AdminDashboard() {

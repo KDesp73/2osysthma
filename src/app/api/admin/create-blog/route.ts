@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
 import matter from "gray-matter";
-import jwt from "jsonwebtoken";
-import fetch from "node-fetch";
 import { GithubHelper } from "@/lib/GithubHelper";
 import { createSlug } from "@/lib/posts";
 
