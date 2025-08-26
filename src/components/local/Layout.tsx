@@ -28,7 +28,7 @@ export default function Layout({ children }: LayoutProps) {
   const path = usePathname();
   if (path.startsWith("/admin/")) {
       if(path === "/admin/login")
-          return <>{children}</>;
+          return children;
 
       return <AdminLayout>{children}</AdminLayout>
   } 
