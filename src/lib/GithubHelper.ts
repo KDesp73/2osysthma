@@ -175,16 +175,18 @@ export class GithubHelper {
         file: Buffer | ArrayBuffer | Uint8Array
     ): Promise<Response> {
         let buffer: Buffer;
-
-        if (file instanceof ArrayBuffer) {
-            buffer = Buffer.from(file);
-        } else if (file instanceof Uint8Array) {
-            buffer = Buffer.from(file);
-        } else {
-            buffer = file;
+        if (file instanceof ArrayBuffer) { 
+            buffer = Buffer.from(file); 
+        } else if (file instanceof Uint8Array) { 
+            buffer = Buffer.from(file); 
+        } else { 
+            buffer = file; 
         }
 
         const base64Content = buffer.toString("base64");
-        return this.upload(remotePath, commitMsg, base64Content);
+
+        const safePath = remotePath.replace(/ /g, "-");
+
+        return this.upload(safePath, commitMsg, base64Content);
     }
 }

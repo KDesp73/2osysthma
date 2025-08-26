@@ -14,7 +14,7 @@ export default function AdminDashboardLayout({ children }: Props) {
 
   const operations = [
     { label: "Posts", icon: <FileText className="h-5 w-5" />, path: "/admin/dashboard/posts" },
-    { label: "Images", icon: <Image className="h-5 w-5" />, path: "/admin/dashboard/images" },
+    { label: "Content", icon: <Image className="h-5 w-5" />, path: "/admin/dashboard/content" },
     { label: "Users", icon: <Users className="h-5 w-5" />, path: "/admin/dashboard/users" },
     { label: "Settings", icon: <Settings className="h-5 w-5" />, path: "/admin/dashboard/settings" },
   ];
