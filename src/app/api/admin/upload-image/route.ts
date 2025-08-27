@@ -14,7 +14,7 @@ export async function POST(req: Request) {
         const gh = new GithubHelper("KDesp73", "2osysthma");
 
         for (const image of images) {
-            const res = await gh.uploadImage(
+            const res = await gh.uploadFile(
                 `public/content/images/${image.name}`,
                 `Uploaded image: ${image.name}`,
                 image.data

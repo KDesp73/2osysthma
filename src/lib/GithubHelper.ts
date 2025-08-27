@@ -169,7 +169,7 @@ export class GithubHelper {
         );
     }
 
-    async uploadImage(
+    async uploadFile(
         remotePath: string,
         commitMsg: string,
         file: Buffer | ArrayBuffer | Uint8Array

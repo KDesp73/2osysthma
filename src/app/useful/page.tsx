@@ -1,16 +1,11 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { File, Link as LinkIcon, Download } from "lucide-react"
-import Link from "next/link"
-import Title from "@/components/local/Title"
+"use client";
 
-const files = [
-  {
-    name: "Ατομικό Δελτίο Υγείας",
-    description: "TODO",
-    href: "/content/files/deltio-ygeias.pdf",
-  },
-]
+import { useEffect, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { File, Link as LinkIcon, Download } from "lucide-react";
+import Link from "next/link";
+import Title from "@/components/local/Title";
 
 const links = [
   {
@@ -23,9 +18,17 @@ const links = [
     description: "Tο ηλεκτρονικό κατάστημα του Προσκοπικού Πρατηρίου του Σώματος Ελλήνων Προσκόπων",
     href: "https://www.scout-shop.gr/",
   },
-]
+];
 
 export default function FilesPage() {
+  const [files, setFiles] = useState<{ name: string; description: string; href: string }[]>([]);
+
+  useEffect(() => {
+    fetch("/api/admin/files")
+      .then((res) => res.json())
+      .then((data) => setFiles(data.files || []));
+  }, []);
+
   return (
     <>
       <Title name="Αρχεία" />
@@ -73,5 +76,5 @@ export default function FilesPage() {
         ))}
       </div>
     </>
-  )
+  );
 }
