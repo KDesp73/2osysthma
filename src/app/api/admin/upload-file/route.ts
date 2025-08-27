@@ -50,7 +50,7 @@ export async function POST(req: Request) {
                 (m) => m.filename === file.name
             );
             const metadataEntry: Metadata = {
-                filename: file.name,
+                filename: file.name.replace(/ /g, "-"),
                 title: file.title || file.name,
                 description: file.description || "",
             };
