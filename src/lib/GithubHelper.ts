@@ -189,4 +189,29 @@ export class GithubHelper {
 
         return this.upload(safePath, commitMsg, base64Content);
     }
+
+    async getFile(remotePath: string): Promise<GitHubFileCheckResponse> {
+        const installationToken = await this.getInstallationToken();
+
+        const url = `https://api.github.com/repos/${this.owner}/${this.repo}/contents/${remotePath}?ref=${this.branch}`;
+
+        const res = await fetch(url, {
+            headers: {
+                Authorization: `Bearer ${installationToken}`,
+                Accept: "application/vnd.github+json",
+            },
+        });
+
+        if (!res.ok) {
+            throw new Error(`Failed to fetch file: ${remotePath}, status: ${res.status}`);
+        }
+
+        const data = (await res.json()) as GitHubFileCheckResponse;
+
+        if (data.content && data.encoding === "base64") {
+            data.content = Buffer.from(data.content, "base64").toString("utf-8");
+        }
+
+        return data;
+    }
 }
