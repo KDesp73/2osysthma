@@ -8,6 +8,12 @@ interface FileUpload {
   data: Uint8Array;
 }
 
+interface Metadata {
+    filename: string,
+    title: string,
+    description: string
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -17,7 +23,7 @@ export async function POST(req: Request) {
     const metadataPath = "public/content/files/metadata.json";
 
     // 1️⃣ Fetch current metadata.json
-    let currentMetadata: any[] = [];
+    let currentMetadata: Metadata[] = [];
     try {
       const metadataRes = await fetch(
         `https://raw.githubusercontent.com/KDesp73/2osysthma/main/${metadataPath}`
