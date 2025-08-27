@@ -144,7 +144,7 @@ export default function ImageUpload() {
         onClick={handleUpload}
         disabled={uploading}
       >
-        {uploading ? "Uploading..." : "Upload"}
+        {uploading ? "Uploading..." : "Upload Images"}
       </button>
     </div>
   );
