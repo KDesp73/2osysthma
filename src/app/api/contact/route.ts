@@ -19,13 +19,20 @@ export async function POST(req: NextRequest) {
             },
         });
 
-        await transporter.sendMail({
-            from: `"${name}" <${email}>`,
-            to: process.env.RECIPIENT_EMAIL!,
-            subject: `Νέο μήνυμα απο την σελίδα (${name})`,
-            text: message,
-            html: `<p>${message}</p><p>From: ${name} (${email})</p>`,
-        });
+        const recepients = [
+            process.env.RECIPIENT_EMAIL!,
+            process.env.RECIPIENT_EMAIL_1!,
+        ];
+
+        for(let rec in recepients) {
+            await transporter.sendMail({
+                from: `"${name}" <${email}>`,
+                to: rec,
+                subject: `Νέο μήνυμα απο την σελίδα (${name})`,
+                text: message,
+                html: `<p>${message}</p><p>From: ${name} (${email})</p>`,
+            });
+        }
 
         return NextResponse.json({ success: true });
     } catch (error) {
