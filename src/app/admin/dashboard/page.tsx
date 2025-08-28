@@ -30,6 +30,5 @@ export default function AdminDashboard() {
           </button>
         ))}
       </section>
-    </>
-  );
+  </>);
 }
