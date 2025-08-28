@@ -25,6 +25,7 @@ export async function POST(req: NextRequest) {
         ];
 
         for (const rec of recipients) {
+            if(!rec) continue;
             await transporter.sendMail({
                 from: `"${name}" <${email}>`,
                 to: rec,
