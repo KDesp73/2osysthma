@@ -19,12 +19,12 @@ export async function POST(req: NextRequest) {
             },
         });
 
-        const recepients = [
+        const recipients = [
             process.env.RECIPIENT_EMAIL!,
             process.env.RECIPIENT_EMAIL_1!,
         ];
 
-        for(let rec in recepients) {
+        for(let rec in recipients) {
             await transporter.sendMail({
                 from: `"${name}" <${email}>`,
                 to: rec,
