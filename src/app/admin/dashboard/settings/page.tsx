@@ -6,11 +6,14 @@ import { useAuthUser } from "@/hooks/useAuthUser";
 
 export default function DashboardSettings() {
     const { user, loading } = useAuthUser();
-    if(loading) <Loading />
+
+    if (loading) return <Loading />;
+
     const username = user?.username;
 
-    return (<>
-        {username === "admin" ? <></> : <ChangePasswordForm />}
-    </>);
+    return (
+        <>
+            {username === "admin" ? null : <ChangePasswordForm />}
+        </>
+    );
 }
-
