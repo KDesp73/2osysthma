@@ -93,7 +93,7 @@ export default function PostEditor() {
       tags: blogData.tags.split(",").map((t) => t.trim()).filter(Boolean),
     };
     try {
-      const res = await fetch("/api/admin/create-blog", {
+      const res = await fetch("/api/admin/upload-blog", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

@@ -1,70 +1,67 @@
 "use client";
 
 import { useState } from "react";
+import { Button } from "../ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Input } from "../ui/input";
+import { Textarea } from "../ui/textarea";
+import { X } from "lucide-react";
 
-interface UsefulFile {
-  file: File | null;
-  name: string;        // user-defined title
+interface PendingFile {
+  file: File;
+  name: string;
   description: string;
 }
 
-export default function UsefulFileUpload() {
-  const [files, setFiles] = useState<UsefulFile[]>([]);
+export default function FileUploader() {
+  const [files, setFiles] = useState<PendingFile[]>([]);
   const [uploading, setUploading] = useState(false);
 
-  // Add a new empty file entry
-  const addFileEntry = () => {
-    setFiles((prev) => [...prev, { file: null, name: "", description: "" }]);
-  };
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    if (e.target.files) {
+      const newFiles = Array.from(e.target.files).map((file) => ({
+        file,
+        name: file.name,
+        description: "",
+      }));
+      setFiles((prev) => [...prev, ...newFiles]);
+    }
+  }
 
-  // Handle file selection
-  const handleFileChange = (index: number, file: File | null) => {
-    setFiles((prev) => {
-      const copy = [...prev];
-      copy[index].file = file;
-      // Pre-fill the title with the original filename if empty
-      if (file && !copy[index].name) copy[index].name = file.name;
-      return copy;
+  function updateFile(index: number, field: "name" | "description", value: string) {
+    setFiles((prev) =>
+      prev.map((f, i) => (i === index ? { ...f, [field]: value } : f))
+    );
+  }
+
+  function removeFile(index: number) {
+    setFiles((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  // Convert file to base64 string
+  const fileToBase64 = (file: File) =>
+    new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsArrayBuffer(file);
+      reader.onload = () => {
+        const uint8 = new Uint8Array(reader.result as ArrayBuffer);
+        resolve(Buffer.from(uint8).toString("base64"));
+      };
+      reader.onerror = (err) => reject(err);
     });
-  };
 
-  // Handle title editing
-  const handleNameChange = (index: number, value: string) => {
-    setFiles((prev) => {
-      const copy = [...prev];
-      copy[index].name = value;
-      return copy;
-    });
-  };
-
-  // Handle description editing
-  const handleDescriptionChange = (index: number, value: string) => {
-    setFiles((prev) => {
-      const copy = [...prev];
-      copy[index].description = value;
-      return copy;
-    });
-  };
-
-  // Handle upload
-  const handleUpload = async () => {
-    const validFiles = files.filter((f) => f.file);
-    if (!validFiles.length) return;
+  async function uploadFiles() {
+    if (!files.length) return;
     setUploading(true);
 
     try {
       const filesData = await Promise.all(
-        validFiles.map(async (f) => {
-          const arrayBuffer = await f.file!.arrayBuffer();
-          const uint8 = new Uint8Array(arrayBuffer);
-          const base64 = Buffer.from(uint8).toString("base64");
-          return {
-            name: f.file!.name,  // original filename
-            title: f.name,       // user-defined title
-            description: f.description,
-            data: base64,
-          };
-        })
+        files.map(async (f) => ({
+          name: f.file.name,
+          title: f.name,
+          description: f.description,
+          data: await fileToBase64(f.file),
+        }))
       );
 
       const res = await fetch("/api/admin/upload-file", {
@@ -73,7 +70,8 @@ export default function UsefulFileUpload() {
         body: JSON.stringify({ files: filesData }),
       });
 
-      if (!res.ok) throw new Error("Upload failed");
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || "Upload failed");
 
       alert("Upload successful!");
       setFiles([]);
@@ -83,56 +81,79 @@ export default function UsefulFileUpload() {
     } finally {
       setUploading(false);
     }
-  };
+  }
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Upload Useful Files</h1>
+    <div className="p-6 max-w-2xl mx-auto">
+      <Card>
+        <CardHeader>
+          <CardTitle>Upload Files</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* File Input */}
+          <input
+            type="file"
+            multiple
+            className="block w-full text-sm"
+            onChange={handleFileChange}
+          />
 
-      {/* Dynamic file entries */}
-      <div className="mb-6 space-y-4">
-        {files.map((f, i) => (
-          <div key={i} className="border rounded p-2">
-            <input
-              type="text"
-              placeholder="Title"
-              className="border rounded p-1 w-full mb-1"
-              value={f.name}
-              onChange={(e) => handleNameChange(i, e.target.value)}
-            />
-            <textarea
-              placeholder="Description"
-              className="border rounded p-1 w-full mb-2"
-              value={f.description}
-              onChange={(e) => handleDescriptionChange(i, e.target.value)}
-            />
-            <input
-              type="file"
-              onChange={(e) =>
-                handleFileChange(i, e.target.files ? e.target.files[0] : null)
-              }
-              className="border rounded p-2 w-full"
-            />
-          </div>
-        ))}
-      </div>
+          {/* List of added files with name & description */}
+          {files.length > 0 && (
+            <div className="space-y-4">
+              {files.map((f, index) => (
+                <div
+                  key={index}
+                  className="rounded-lg border bg-muted/30 p-4 space-y-3 relative"
+                >
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute top-2 right-2"
+                    onClick={() => removeFile(index)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
 
-      <div className="mb-4 flex gap-2">
-        <button
-          className="bg-gray-500 text-white px-4 py-1 rounded hover:bg-gray-600 transition"
-          onClick={addFileEntry}
-        >
-          Add File
-        </button>
-      </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Filename</label>
+                    <p>{f.file.name}</p>
+                  </div>
 
-      <button
-        className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 transition"
-        onClick={handleUpload}
-        disabled={uploading}
-      >
-        {uploading ? "Uploading..." : "Upload Files"}
-      </button>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Name</label>
+                    <Input
+                      value={f.name}
+                      onChange={(e) =>
+                        updateFile(index, "name", e.target.value)
+                      }
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Description</label>
+                    <Textarea
+                      value={f.description}
+                      onChange={(e) =>
+                        updateFile(index, "description", e.target.value)
+                      }
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Upload Button */}
+          <Button
+            onClick={uploadFiles}
+            disabled={files.length === 0 || uploading}
+            className="w-full"
+          >
+            {uploading ? "Uploading..." : "Upload"}
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   );
 }

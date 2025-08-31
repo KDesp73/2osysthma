@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import PasswordField from "./PasswordField";
 import { Input } from "../ui/input";
+import { Button } from "../ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 
 export default function UserManager() {
   const [users, setUsers] = useState<{ id: number; username: string }[]>([]);
@@ -36,57 +38,63 @@ export default function UserManager() {
   }
 
   useEffect(() => {
-      fetchUsers();
+    fetchUsers();
   }, []);
 
   return (
-    <div className="p-6 max-w-lg mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Admin Panel</h1>
-
-      {/* Create User Form */}
-      <div className="mb-6 space-y-2">
-        <Input
-          type="text"
-          placeholder="Username"
-          className="border p-2 w-full rounded"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-        />
-        <PasswordField
-          id="password"
-          name="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="mb-4"
-        />
-
-        <button
-          className="bg-blue-600 text-white px-4 py-2 rounded"
-          onClick={createUser}
-        >
-          Create User
-        </button>
-      </div>
+    <div className="p-6 max-w-2xl mx-auto space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold">Admin Panel</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Create User Form */}
+          <div className="space-y-3">
+            <Input
+              type="text"
+              placeholder="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
+            <PasswordField
+              id="password"
+              name="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <Button variant="default" onClick={createUser}>
+              Create User
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* User List */}
-      <h2 className="text-xl font-semibold mb-2">Users</h2>
-      <ul className="space-y-2">
-        {users.map((u) => (
-          <li
-            key={u.id}
-            className="flex justify-between items-center border p-2 rounded"
-          >
-            <span>{u.username}</span>
-            <button
-              className="bg-red-600 text-white px-3 py-1 rounded"
-              onClick={() => deleteUser(u.id)}
-            >
-              Delete
-            </button>
-          </li>
-        ))}
-      </ul>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold">Users</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ul className="space-y-2">
+            {users.map((u) => (
+              <li
+                key={u.id}
+                className="flex justify-between items-center rounded-lg border p-3 bg-muted/30"
+              >
+                <span className="font-medium">{u.username}</span>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => deleteUser(u.id)}
+                >
+                  Delete
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </CardContent>
+      </Card>
     </div>
   );
 }

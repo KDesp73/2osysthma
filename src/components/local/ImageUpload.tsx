@@ -1,6 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 
 interface ImageUploadPreview {
   file: File;
@@ -15,7 +20,6 @@ export default function ImageUpload() {
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
-    // fetch collections from API
     fetch("/api/admin/collections")
       .then((res) => res.json())
       .then((data) => setCollections(data.collections || []));
@@ -32,121 +36,124 @@ export default function ImageUpload() {
     setImages((prev) => [...prev, ...filesArray]);
   };
 
-    const handleUpload = async () => {
-      if (!images.length) return;
-      setUploading(true);
+  const handleUpload = async () => {
+    if (!images.length) return;
+    setUploading(true);
 
-      let finalCollection = newCollection || collection;
-      if (!finalCollection) {
-        alert("Please select or create a collection");
-        setUploading(false);
-        return;
-      }
+    let finalCollection = newCollection || collection;
+    if (!finalCollection) {
+      alert("Please select or create a collection");
+      setUploading(false);
+      return;
+    }
 
-      // Prepend date if creating a new collection
-      if (newCollection) {
-        const datePrefix = new Date().toISOString().split("T")[0]; // e.g., "2025-08-27"
-        finalCollection = `${datePrefix}-${newCollection}`;
-      }
+    if (newCollection) {
+      const datePrefix = new Date().toISOString().split("T")[0];
+      finalCollection = `${datePrefix}-${newCollection}`;
+    }
 
-      try {
-        const filesData = await Promise.all(
-          images.map(async (img) => {
-            const arrayBuffer = await img.file.arrayBuffer();
-            const uint8 = new Uint8Array(arrayBuffer);
-            const base64 = Buffer.from(uint8).toString("base64");
-            return {
-              name: `${finalCollection}/${img.file.name}`,
-              data: base64,
-            };
-          })
-        );
+    try {
+      const filesData = await Promise.all(
+        images.map(async (img) => {
+          const arrayBuffer = await img.file.arrayBuffer();
+          const uint8 = new Uint8Array(arrayBuffer);
+          const base64 = Buffer.from(uint8).toString("base64");
+          return {
+            name: `${finalCollection}/${img.file.name}`,
+            data: base64,
+          };
+        })
+      );
 
-        const res = await fetch("/api/admin/upload-image", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ images: filesData }),
-        });
+      const res = await fetch("/api/admin/upload-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ images: filesData }),
+      });
 
-        if (!res.ok) throw new Error("Upload failed");
+      if (!res.ok) throw new Error("Upload failed");
 
-        alert("Upload successful!");
-        setImages([]);
-        setNewCollection("");
-        setCollection("");
-      } catch (err) {
-        console.error(err);
-        alert("Upload failed");
-      } finally {
-        setUploading(false);
-      }
-    };
+      alert("Upload successful!");
+      setImages([]);
+      setNewCollection("");
+      setCollection("");
+    } catch (err) {
+      console.error(err);
+      alert("Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Upload Images</h1>
-
-      {/* Collection selection */}
-      <div className="mb-6">
-        <label className="block font-semibold mb-2">Choose collection</label>
-        <select
-          className="border rounded p-2 w-full mb-2"
-          value={collection}
-          onChange={(e) => setCollection(e.target.value)}
-        >
-          <option value="">-- Select existing collection --</option>
-          {collections.map((c) => {
-            const displayName = c.includes("-") ? c.split("-").slice(3).join("-") : c;
-            return (
-              <option key={c} value={c}>
-                {displayName}
-              </option>
-            );
-          })}
-        </select>
-
-        <label className="block font-semibold mb-2">Or create new collection</label>
-        <input
-          type="text"
-          className="border rounded p-2 w-full"
-          placeholder="New collection name"
-          value={newCollection}
-          onChange={(e) => setNewCollection(e.target.value)}
-        />
-      </div>
-
-      {/* File input */}
-      <div className="mb-6">
-        <label className="block font-semibold mb-2">Select images</label>
-        <input
-          type="file"
-          multiple
-          accept="image/*"
-          onChange={handleFilesChange}
-          className="border rounded p-2 w-full"
-        />
-      </div>
-
-      {/* Preview images */}
-      {images.length > 0 && (
-        <div className="mb-6 grid grid-cols-3 gap-4">
-          {images.map((img, i) => (
-            <div key={i} className="border rounded overflow-hidden">
-              <img src={img.preview} alt={img.file.name} className="object-cover w-full h-32" />
-              <p className="text-sm text-center p-1 truncate">{img.file.name}</p>
+    <div className="max-w-4xl mx-auto p-6 space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold">Upload Images</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Collection Selection */}
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="collection">Choose collection</Label>
+              <Select value={collection} onValueChange={(val) => setCollection(val)}>
+                <SelectTrigger id="collection">
+                  <SelectValue placeholder="-- Select existing collection --" />
+                </SelectTrigger>
+                <SelectContent>
+                  {collections.map((c) => {
+                    const displayName = c.includes("-") ? c.split("-").slice(3).join("-") : c;
+                    return (
+                      <SelectItem key={c} value={c}>
+                        {displayName}
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
             </div>
-          ))}
-        </div>
-      )}
 
-      <button
-        className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition"
-        onClick={handleUpload}
-        disabled={uploading}
-      >
-        {uploading ? "Uploading..." : "Upload Images"}
-      </button>
+            <div>
+              <Label htmlFor="new-collection">Or create new collection</Label>
+              <Input
+                id="new-collection"
+                type="text"
+                placeholder="New collection name"
+                value={newCollection}
+                onChange={(e) => setNewCollection(e.target.value)}
+              />
+            </div>
+          </div>
+
+          {/* File input */}
+          <div>
+            <Label htmlFor="file-upload">Select images</Label>
+            <Input
+              id="file-upload"
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={handleFilesChange}
+            />
+          </div>
+
+          {/* Preview images */}
+          {images.length > 0 && (
+            <div className="grid grid-cols-3 gap-4">
+              {images.map((img, i) => (
+                <Card key={i} className="overflow-hidden">
+                  <img src={img.preview} alt={img.file.name} className="object-cover w-full h-32" />
+                  <p className="text-sm text-center p-2 truncate">{img.file.name}</p>
+                </Card>
+              ))}
+            </div>
+          )}
+
+          <Button onClick={handleUpload} disabled={uploading} className="w-full">
+            {uploading ? "Uploading..." : "Upload Images"}
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   );
 }
-
