@@ -1,12 +1,12 @@
-TODO: better home page
 TODO: proper images in gallery
 TODO: remove test blogposts
 TODO: uploading images for blogposts
 TODO: removing images/galleries/files from dashboard
 TODO: domain
-TODO: responsive ui for dashboard
 DONE: uniform dashboard ui
 DONE: view password
 DONE: dashboard/settings
 DONE: merge similar endpoints
 DONE: lock admin endpoints
+DONE: better home page
+DONE: responsive ui for dashboard
