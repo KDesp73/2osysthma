@@ -1,23 +1,12 @@
 "use client";
 
 import Loading from "@/components/local/Loading";
-import { useAuthUser } from "@/hooks/useAuthUser";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-export default function DashboardUsers() {
+export default function UserManager() {
   const [users, setUsers] = useState<{ id: number; username: string }[]>([]);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-
-  const { user, loading } = useAuthUser();
-  const router = useRouter();
-
-  useEffect(() => {
-      if (!loading && user?.username !== "admin") {
-          router.push("/admin/dashboard");
-      }
-  }, [loading, user, router]);
 
   async function fetchUsers() {
     const res = await fetch("/api/admin/users");
@@ -46,14 +35,8 @@ export default function DashboardUsers() {
   }
 
   useEffect(() => {
-      if (user?.username === "admin") {
-          fetchUsers();
-      }
-  }, [user]);
-
-  if (loading) return <Loading />;
-
-  if (user?.username !== "admin") return null;
+      fetchUsers();
+  }, []);
 
   return (
     <div className="p-6 max-w-lg mx-auto">
@@ -104,3 +87,4 @@ export default function DashboardUsers() {
     </div>
   );
 }
+

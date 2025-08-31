@@ -2,6 +2,7 @@
 
 import ChangePasswordForm from "@/components/local/ChangePasswordForm";
 import Loading from "@/components/local/Loading";
+import UserManager from "@/components/local/UserManager";
 import { useAuthUser } from "@/hooks/useAuthUser";
 
 export default function DashboardSettings() {
@@ -13,7 +14,11 @@ export default function DashboardSettings() {
 
     return (
         <>
-            {username === "admin" ? null : <ChangePasswordForm />}
+            {username === "admin" ? (<>
+                <UserManager />
+            </>) : (<>
+                <ChangePasswordForm />
+            </>)}
         </>
     );
 }
