@@ -49,12 +49,13 @@ export function createSlug(title: string): string {
 
 export function getAllPosts(): Post[] {
   const fileNames = fs.readdirSync(postsDirectory)
+    .filter((fileName) => fileName.endsWith(".md"));
 
   const posts = fileNames.map((fileName) => {
-    const slug = fileName.replace(/\.md$/, "")
-    const filePath = path.join(postsDirectory, fileName)
-    const fileContents = fs.readFileSync(filePath, "utf8")
-    const { data } = matter(fileContents) as unknown as { data: FrontMatter }
+    const slug = fileName.replace(/\.md$/, "");
+    const filePath = path.join(postsDirectory, fileName);
+    const fileContents = fs.readFileSync(filePath, "utf8");
+    const { data } = matter(fileContents) as unknown as { data: FrontMatter };
 
     return {
       slug,
@@ -63,13 +64,13 @@ export function getAllPosts(): Post[] {
       description: data.description,
       author: data.author,
       tags: data.tags,
-    }
-  }) as Post[]
+    };
+  }) as Post[];
 
   // Sort by date descending
   return posts.sort(
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-  )
+  );
 }
 
 
