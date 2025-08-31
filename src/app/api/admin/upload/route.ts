@@ -20,106 +20,131 @@ interface FileMetadata {
   description: string;
 }
 
-export async function POST(req: Request) {
-  try {
-    const body = await req.json();
-    const items: UploadItem[] = body.items;
-
-    if (!items || !Array.isArray(items) || items.length === 0) {
-      return NextResponse.json(
-        { success: false, error: "No items provided" },
-        { status: 400 }
-      );
+async function blog(gh: GithubHelper, item: UploadItem) {
+    if (!item.title || !item.content) {
+        throw new Error("Blog items must have title and content");
     }
 
-    const gh = new GithubHelper("KDesp73", "2osysthma");
+    const slug = createSlug(item.title);
+    if (!slug) throw new Error("Cannot generate slug from title");
+
+    try {
+        await gh.getFile(`public/content/blog/${slug}.md`);
+        throw new Error(`A blog post with the title "${item.title}" already exists.`);
+    } catch (err: any) {
+        if (!err.message.includes("Failed to fetch file")) {
+            // If the error is not "file not found", rethrow
+            throw err;
+        }
+    }
+
+    const frontmatter = matter.stringify(item.content, {
+        title: item.title,
+        description: item.description,
+        author: item.author,
+        date: new Date().toISOString(),
+        tags: item.tags,
+        slug,
+    });
+
+    const res = await gh.upload(
+        `public/content/blog/${slug}.md`,
+        `Add blog post: ${item.title}`,
+        Buffer.from(frontmatter).toString("base64")
+    );
+
+    if (!res.ok) throw new Error(`Failed to upload blog: ${item.title}`);
+}
+
+async function file(gh: GithubHelper, item: UploadItem) {
+    if (!item.name || !item.data) {
+        throw new Error("File items must have name and data");
+    }
+
     const fileMetadataPath = "public/content/files/metadata.json";
 
-    // fetch existing file metadata if needed
     let currentMetadata: FileMetadata[] = [];
     try {
-      const res = await gh.getFile(fileMetadataPath);
-      if (res && res.content) {
-        currentMetadata = JSON.parse(res.content);
-      }
+        const res = await gh.getFile(fileMetadataPath);
+        if (res && res.content) {
+            currentMetadata = JSON.parse(res.content);
+        }
     } catch {
-      console.log("No existing file metadata, creating new one.");
+        console.log("No existing file metadata, creating new one.");
     }
 
-    for (const item of items) {
-      if (item.type === "blog") {
-        if (!item.title || !item.content) {
-          throw new Error("Blog items must have title and content");
-        }
-        const slug = createSlug(item.title);
-        if (!slug) throw new Error("Cannot generate slug from title");
+    const res = await gh.uploadFile(
+        `public/content/files/${item.name}`,
+        `Uploaded file: ${item.name}`,
+        Buffer.from(item.data, "base64")
+    );
+    if (!res.ok) throw new Error(`Failed to upload file: ${item.name}`);
 
-        const frontmatter = matter.stringify(item.content, {
-          title: item.title,
-          description: item.description,
-          author: item.author,
-          date: new Date().toISOString(),
-          tags: item.tags,
-          slug,
+    const existingIndex = currentMetadata.findIndex(
+        (m) => m.filename === item.name
+    );
+    const metadataEntry: FileMetadata = {
+        filename: item.name.replace(/ /g, "-"),
+        title: item.title || item.name,
+        description: item.description || "",
+    };
+    if (existingIndex >= 0) currentMetadata[existingIndex] = metadataEntry;
+    else currentMetadata.push(metadataEntry);
+
+    // upload updated file metadata
+    await gh.uploadFile(
+        fileMetadataPath,
+        "Update metadata.json",
+        Buffer.from(JSON.stringify(currentMetadata, null, 2))
+    );
+}
+
+async function image(gh: GithubHelper, item: UploadItem) {
+    if (!item.name || !item.data) {
+        throw new Error("Image items must have name and data");
+    }
+    const res = await gh.uploadFile(
+        `public/content/images/${item.name}`,
+        `Uploaded image: ${item.name}`,
+        Buffer.from(item.data, "base64")
+    );
+    if (!res.ok) throw new Error(`Failed to upload image: ${item.name}`);
+}
+
+
+export async function POST(req: Request) {
+    try {
+        const body = await req.json();
+        const items: UploadItem[] = body.items;
+
+        if (!items || !Array.isArray(items) || items.length === 0) {
+            return NextResponse.json(
+                { success: false, error: "No items provided" },
+                { status: 400 }
+            );
+        }
+
+        const gh = new GithubHelper("KDesp73", "2osysthma");
+
+        for (const item of items) {
+            if (item.type === "blog") {
+                blog(gh, item);
+            } else if (item.type === "file") {
+                file(gh, item);
+            } else if (item.type === "image") {
+                image(gh, item);
+            } else {
+                throw new Error(`Unknown item type: ${item.type}`);
+            }
+        }
+
+        return NextResponse.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        return NextResponse.json({
+            success: false,
+            error: (err as Error).message,
         });
-
-        const res = await gh.upload(
-          `public/content/blog/${slug}.md`,
-          `Add blog post: ${item.title}`,
-          Buffer.from(frontmatter).toString("base64")
-        );
-        if (!res.ok) throw new Error(`Failed to upload blog: ${item.title}`);
-
-      } else if (item.type === "file") {
-        if (!item.name || !item.data) {
-          throw new Error("File items must have name and data");
-        }
-        const res = await gh.uploadFile(
-          `public/content/files/${item.name}`,
-          `Uploaded file: ${item.name}`,
-          Buffer.from(item.data, "base64")
-        );
-        if (!res.ok) throw new Error(`Failed to upload file: ${item.name}`);
-
-        const existingIndex = currentMetadata.findIndex(
-          (m) => m.filename === item.name
-        );
-        const metadataEntry: FileMetadata = {
-          filename: item.name.replace(/ /g, "-"),
-          title: item.title || item.name,
-          description: item.description || "",
-        };
-        if (existingIndex >= 0) currentMetadata[existingIndex] = metadataEntry;
-        else currentMetadata.push(metadataEntry);
-
-        // upload updated file metadata
-        await gh.uploadFile(
-            fileMetadataPath,
-            "Update metadata.json",
-            Buffer.from(JSON.stringify(currentMetadata, null, 2))
-        );
-      } else if (item.type === "image") {
-        if (!item.name || !item.data) {
-          throw new Error("Image items must have name and data");
-        }
-        const res = await gh.uploadFile(
-          `public/content/images/${item.name}`,
-          `Uploaded image: ${item.name}`,
-          Buffer.from(item.data, "base64")
-        );
-        if (!res.ok) throw new Error(`Failed to upload image: ${item.name}`);
-      } else {
-        throw new Error(`Unknown item type: ${item.type}`);
-      }
     }
-
-    return NextResponse.json({ success: true, metadata: currentMetadata });
-  } catch (err) {
-    console.error(err);
-    return NextResponse.json({
-      success: false,
-      error: (err as Error).message,
-    });
-  }
 }
 
