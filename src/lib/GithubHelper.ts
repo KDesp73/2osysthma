@@ -7,6 +7,18 @@ type GitHubFileCheckResponse = {
     encoding: string;
 };
 
+interface GitHubCommit {
+    sha: string;
+    commit: {
+        author: {
+            name: string;
+            date: string;
+        };
+        message: string;
+    };
+    html_url: string;
+}
+
 type GitHubInstallationTokenResponse = {
     token: string;
     expires_at: string;
@@ -235,7 +247,7 @@ export class GithubHelper {
         }
 
         const commits = await res.json();
-        return commits.map((c: any) => ({
+        return commits.map((c: GitHubCommit) => ({
             sha: c.sha,
             message: c.commit.message,
             author: c.commit.author.name,
