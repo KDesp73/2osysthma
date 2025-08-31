@@ -111,8 +111,8 @@ export default function Contact() {
             </li>
             <li className="flex items-center gap-2">
               <Phone className="h-5 w-5 text-gray-500" />
-              <a href="tel:+302341028348" className="hover:underline">
-                +30 2341 028348
+              <a href="tel:+306981927806" className="hover:underline">
+                +30 698 192 7806 (Στάθης Ιορδανίδης)
               </a>
             </li>
             <li className="flex items-center gap-2">
