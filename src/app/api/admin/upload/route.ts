@@ -1,0 +1,125 @@
+import { NextResponse } from "next/server";
+import matter from "gray-matter";
+import { GithubHelper } from "@/lib/GithubHelper";
+import { createSlug } from "@/lib/posts";
+
+interface UploadItem {
+  type: "blog" | "file" | "image";
+  title?: string;        // for blog title or file title
+  description?: string;  // optional description for blog/file
+  author?: string;       // for blog
+  tags?: string[];       // for blog
+  content?: string;      // for blog
+  name?: string;         // for file/image filename
+  data?: string;         // base64 string for file/image
+}
+
+interface FileMetadata {
+  filename: string;
+  title: string;
+  description: string;
+}
+
+export async function POST(req: Request) {
+  try {
+    const body = await req.json();
+    const items: UploadItem[] = body.items;
+
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return NextResponse.json(
+        { success: false, error: "No items provided" },
+        { status: 400 }
+      );
+    }
+
+    const gh = new GithubHelper("KDesp73", "2osysthma");
+    const fileMetadataPath = "public/content/files/metadata.json";
+
+    // fetch existing file metadata if needed
+    let currentMetadata: FileMetadata[] = [];
+    try {
+      const res = await gh.getFile(fileMetadataPath);
+      if (res && res.content) {
+        currentMetadata = JSON.parse(res.content);
+      }
+    } catch {
+      console.log("No existing file metadata, creating new one.");
+    }
+
+    for (const item of items) {
+      if (item.type === "blog") {
+        if (!item.title || !item.content) {
+          throw new Error("Blog items must have title and content");
+        }
+        const slug = createSlug(item.title);
+        if (!slug) throw new Error("Cannot generate slug from title");
+
+        const frontmatter = matter.stringify(item.content, {
+          title: item.title,
+          description: item.description,
+          author: item.author,
+          date: new Date().toISOString(),
+          tags: item.tags,
+          slug,
+        });
+
+        const res = await gh.upload(
+          `public/content/blog/${slug}.md`,
+          `Add blog post: ${item.title}`,
+          Buffer.from(frontmatter).toString("base64")
+        );
+        if (!res.ok) throw new Error(`Failed to upload blog: ${item.title}`);
+
+      } else if (item.type === "file") {
+        if (!item.name || !item.data) {
+          throw new Error("File items must have name and data");
+        }
+        const res = await gh.uploadFile(
+          `public/content/files/${item.name}`,
+          `Uploaded file: ${item.name}`,
+          Buffer.from(item.data, "base64")
+        );
+        if (!res.ok) throw new Error(`Failed to upload file: ${item.name}`);
+
+        const existingIndex = currentMetadata.findIndex(
+          (m) => m.filename === item.name
+        );
+        const metadataEntry: FileMetadata = {
+          filename: item.name.replace(/ /g, "-"),
+          title: item.title || item.name,
+          description: item.description || "",
+        };
+        if (existingIndex >= 0) currentMetadata[existingIndex] = metadataEntry;
+        else currentMetadata.push(metadataEntry);
+
+        // upload updated file metadata
+        await gh.uploadFile(
+            fileMetadataPath,
+            "Update metadata.json",
+            Buffer.from(JSON.stringify(currentMetadata, null, 2))
+        );
+      } else if (item.type === "image") {
+        if (!item.name || !item.data) {
+          throw new Error("Image items must have name and data");
+        }
+        const res = await gh.uploadFile(
+          `public/content/images/${item.name}`,
+          `Uploaded image: ${item.name}`,
+          Buffer.from(item.data, "base64")
+        );
+        if (!res.ok) throw new Error(`Failed to upload image: ${item.name}`);
+      } else {
+        throw new Error(`Unknown item type: ${item.type}`);
+      }
+    }
+
+    return NextResponse.json({ success: true, metadata: currentMetadata });
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json({
+      success: false,
+      error: (err as Error).message,
+    });
+  }
+}
+

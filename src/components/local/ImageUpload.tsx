@@ -59,16 +59,17 @@ export default function ImageUpload() {
           const uint8 = new Uint8Array(arrayBuffer);
           const base64 = Buffer.from(uint8).toString("base64");
           return {
+            type: "image",
             name: `${finalCollection}/${img.file.name}`,
             data: base64,
           };
         })
       );
 
-      const res = await fetch("/api/admin/upload-image", {
+      const res = await fetch("/api/admin/upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ images: filesData }),
+        body: JSON.stringify({ items: filesData }),
       });
 
       if (!res.ok) throw new Error("Upload failed");

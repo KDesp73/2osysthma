@@ -57,6 +57,7 @@ export default function FileUploader() {
     try {
       const filesData = await Promise.all(
         files.map(async (f) => ({
+          type: "file",
           name: f.file.name,
           title: f.name,
           description: f.description,
@@ -64,10 +65,10 @@ export default function FileUploader() {
         }))
       );
 
-      const res = await fetch("/api/admin/upload-file", {
+      const res = await fetch("/api/admin/upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ files: filesData }),
+        body: JSON.stringify({ items: filesData }),
       });
 
       const data = await res.json();

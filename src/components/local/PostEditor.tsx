@@ -89,15 +89,21 @@ export default function PostEditor() {
   const handleBlogSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const payload = {
-      ...blogData,
-      tags: blogData.tags.split(",").map((t) => t.trim()).filter(Boolean),
+        type: "blog",
+        ...blogData,
+        tags: blogData.tags
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean),
     };
+
     try {
-      const res = await fetch("/api/admin/upload-blog", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+        const res = await fetch("/api/admin/upload", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ items: [payload] }),
+        });
+
       const data = await res.json();
       setMessage(data.success ? "Blog created successfully!" : "Error creating blog");
       setError(!data.success);
