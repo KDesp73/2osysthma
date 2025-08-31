@@ -1,6 +1,8 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import PasswordField from "@/components/local/PasswordField";
+import { Button } from "../ui/button";
 
 export default function ChangePasswordForm() {
   const [oldPassword, setOldPassword] = useState("");
@@ -26,7 +28,6 @@ export default function ChangePasswordForm() {
     const data = await res.json();
     if (res.ok && data.success) {
         await fetch("/api/admin/logout", { method: "POST" });
-
         router.push("/admin/login");
     } else {
         setMessage(data.message || data.error);
@@ -35,30 +36,31 @@ export default function ChangePasswordForm() {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4 p-4 max-w-md">
-      <input
-        type="password"
+      <PasswordField
+        id="old-password"
+        name="oldPassword"
         placeholder="Old Password"
         value={oldPassword}
         onChange={(e) => setOldPassword(e.target.value)}
-        className="border rounded p-2"
       />
-      <input
-        type="password"
+      <PasswordField
+        id="new-password"
+        name="newPassword"
         placeholder="New Password"
         value={newPassword}
         onChange={(e) => setNewPassword(e.target.value)}
-        className="border rounded p-2"
+        showStrength
       />
-      <input
-        type="password"
+      <PasswordField
+        id="confirm-password"
+        name="confirmPassword"
         placeholder="Confirm New Password"
         value={confirmPassword}
         onChange={(e) => setConfirmPassword(e.target.value)}
-        className="border rounded p-2"
       />
-      <button type="submit" className="bg-blue-500 text-white rounded p-2">
+      <Button type="submit">
         Change Password
-      </button>
+      </Button>
       {message && <p className="text-sm mt-2">{message}</p>}
     </form>
   );

@@ -2,6 +2,7 @@
 
 import Loading from "@/components/local/Loading";
 import { useEffect, useState } from "react";
+import PasswordField from "./PasswordField";
 
 export default function UserManager() {
   const [users, setUsers] = useState<{ id: number; username: string }[]>([]);
@@ -51,13 +52,15 @@ export default function UserManager() {
           value={username}
           onChange={(e) => setUsername(e.target.value)}
         />
-        <input
-          type="password"
+        <PasswordField
+          id="password"
+          name="password"
           placeholder="Password"
-          className="border p-2 w-full rounded"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          className="mb-4"
         />
+
         <button
           className="bg-blue-600 text-white px-4 py-2 rounded"
           onClick={createUser}

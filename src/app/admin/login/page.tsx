@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import PasswordField from "@/components/local/PasswordField";
 
 export default function AdminLogin() {
   const [username, setUsername] = useState("");
@@ -47,8 +48,9 @@ export default function AdminLogin() {
           className="mb-4"
         />
 
-        <Input
-          type="password"
+        <PasswordField
+          id="password"
+          name="password"
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
