@@ -1,8 +1,8 @@
 "use client";
 
-import Loading from "@/components/local/Loading";
 import { useEffect, useState } from "react";
 import PasswordField from "./PasswordField";
+import { Input } from "../ui/input";
 
 export default function UserManager() {
   const [users, setUsers] = useState<{ id: number; username: string }[]>([]);
@@ -45,7 +45,7 @@ export default function UserManager() {
 
       {/* Create User Form */}
       <div className="mb-6 space-y-2">
-        <input
+        <Input
           type="text"
           placeholder="Username"
           className="border p-2 w-full rounded"
@@ -91,3 +91,4 @@ export default function UserManager() {
   );
 }
 
+// TODO: Split into 2 components

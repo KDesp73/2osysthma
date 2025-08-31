@@ -16,7 +16,6 @@ type PasswordFieldProps = {
 };
 
 export default function PasswordField({
-  id,
   name,
   value = "",
   placeholder = "Enter password",
@@ -24,7 +23,7 @@ export default function PasswordField({
   onChange,
   showStrength = false,
 }: PasswordFieldProps) {
-  const _id = id ?? useId();
+  const _id = useId();
   const [visible, setVisible] = useState(false);
 
   const toggle = () => setVisible((v) => !v);
