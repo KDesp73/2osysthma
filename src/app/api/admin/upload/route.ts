@@ -31,8 +31,8 @@ async function blog(gh: GithubHelper, item: UploadItem) {
     try {
         await gh.getFile(`public/content/blog/${slug}.md`);
         throw new Error(`A blog post with the title "${item.title}" already exists.`);
-    } catch (err: any) {
-        if (!err.message.includes("Failed to fetch file")) {
+    } catch (err: unknown) {
+        if (!(err as Error).message.includes("Failed to fetch file")) {
             // If the error is not "file not found", rethrow
             throw err;
         }
