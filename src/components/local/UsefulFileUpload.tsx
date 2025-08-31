@@ -87,7 +87,7 @@ export default function FileUploader() {
     <div className="p-6 max-w-2xl mx-auto">
       <Card>
         <CardHeader>
-          <CardTitle>Upload Files</CardTitle>
+          <CardTitle className="text-2xl font-bold">Upload File</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* File Input */}
