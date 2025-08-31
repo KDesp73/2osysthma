@@ -24,7 +24,7 @@ export default function FilesPage() {
   const [files, setFiles] = useState<{ name: string; description: string; href: string }[]>([]);
 
   useEffect(() => {
-    fetch("/api/admin/files")
+    fetch("/api/files")
       .then((res) => res.json())
       .then((data) => setFiles(data.files || []));
   }, []);

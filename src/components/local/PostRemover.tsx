@@ -25,7 +25,7 @@ export default function PostRemover() {
       if (!confirmed) return;
 
       try {
-          const res = await fetch("/api/posts", {
+          const res = await fetch("/api/admin/posts", {
               method: "DELETE",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ title }),

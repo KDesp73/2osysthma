@@ -13,7 +13,7 @@ interface PendingFile {
   description: string;
 }
 
-export default function FileUploader() {
+export default function FileUpload() {
   const [files, setFiles] = useState<PendingFile[]>([]);
   const [uploading, setUploading] = useState(false);
 

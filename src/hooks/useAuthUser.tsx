@@ -13,7 +13,7 @@ export function useAuthUser() {
     useEffect(() => {
         const fetchUser = async () => {
             try {
-                const res = await fetch("/api/admin/me");
+                const res = await fetch("/api/admin/whoami");
                 if (!res.ok) {
                     setUser(null);
                     setLoading(false);
