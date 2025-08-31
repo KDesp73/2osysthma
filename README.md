@@ -1,5 +1,9 @@
 # 2osysthma
 
+## Services
+
+- [TursoDB](https://turso.tech/)
+
 ## Environment
 
 ```env
@@ -19,4 +23,14 @@ JWT_SECRET=<STRING>
 
 TURSO_DATABASE_URL=<URL>
 TURSO_AUTH_TOKEN=<TOKEN>
+```
+
+## DB Schema
+
+```sql
+CREATE TABLE users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  username TEXT UNIQUE,
+  password TEXT
+);
 ```
