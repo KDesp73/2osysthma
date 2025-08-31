@@ -1,10 +1,22 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { FileText, Image, Settings } from "lucide-react";
+import { FileText, Image, Settings, Github } from "lucide-react";
+import { GithubHelper } from "@/lib/GithubHelper";
+
+interface Commit {
+  sha: string;
+  message: string;
+  author: string;
+  date: string;
+  url: string;
+}
 
 export default function AdminDashboard() {
   const router = useRouter();
+  const [history, setHistory] = useState<Commit[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const operations = [
     { label: "Posts", icon: <FileText className="h-8 w-8 mb-2" />, path: "/admin/dashboard/posts" },
@@ -12,12 +24,35 @@ export default function AdminDashboard() {
     { label: "Settings", icon: <Settings className="h-8 w-8 mb-2" />, path: "/admin/dashboard/settings" },
   ];
 
-  return (<>
-      <header className="mb-12">
-        <h1 className="text-3xl font-bold text-center">Admin Dashboard</h1>
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+          const params = new URLSearchParams({
+              path: "",
+              count: "10",
+          });
+
+          const res = await fetch(`/api/admin/git-history?${params.toString()}`);
+          const commits = await res.json();
+          setHistory(commits);
+      } catch (err) {
+        console.error("Failed to fetch git history", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchHistory();
+  }, []);
+
+  return (
+    <div className="p-6 max-w-6xl mx-auto space-y-12">
+      <header className="mb-6 text-center">
+        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
       </header>
 
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl w-full px-6">
+      {/* Operations Grid */}
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {operations.map((op) => (
           <button
             key={op.label}
@@ -29,5 +64,34 @@ export default function AdminDashboard() {
           </button>
         ))}
       </section>
-  </>);
+
+      {/* Git History */}
+      <section className="bg-white rounded-2xl shadow p-6">
+        <div className="flex items-center mb-4">
+          <Github className="h-6 w-6 mr-2" />
+          <h2 className="text-xl font-semibold">Recent Git Commits</h2>
+        </div>
+
+        {loading ? (
+          <p>Loading commits...</p>
+        ) : history.length === 0 ? (
+          <p>No recent commits found.</p>
+        ) : (
+          <ul className="space-y-3">
+            {history.map((c) => (
+              <li key={c.sha} className="border rounded p-3 hover:bg-gray-50 transition">
+                <a href={c.url} target="_blank" rel="noopener noreferrer" className="font-medium text-blue-600 hover:underline">
+                  {c.message}
+                </a>
+                <p className="text-sm text-gray-500">
+                  {c.author} • {new Date(c.date).toLocaleString()}
+                </p>
+                <p className="text-xs text-gray-400 truncate">{c.sha}</p>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+    </div>
+  );
 }

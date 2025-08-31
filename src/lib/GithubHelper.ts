@@ -1,38 +1,38 @@
 import jwt from "jsonwebtoken";
 
 type GitHubFileCheckResponse = {
-  sha: string;
-  url: string;
-  content: string;
-  encoding: string;
+    sha: string;
+    url: string;
+    content: string;
+    encoding: string;
 };
 
 type GitHubInstallationTokenResponse = {
-  token: string;
-  expires_at: string;
-  permissions: Record<string, string>;
-  repository_selection: string;
+    token: string;
+    expires_at: string;
+    permissions: Record<string, string>;
+    repository_selection: string;
 };
 
 type GitHubInstallation = {
-  id: number;
-  account: {
-    login: string;
     id: number;
-    type: string; // "User" or "Organization"
-  };
-  repository_selection: string;
-  access_tokens_url: string;
-  repositories_url: string;
-  app_id: number;
-  target_id: number;
-  target_type: string;
-  permissions: Record<string, string>;
-  events: string[];
-  created_at: string;
-  updated_at: string;
-  single_file_name: string | null;
-  has_multiple_single_files?: boolean;
+    account: {
+        login: string;
+        id: number;
+        type: string; // "User" or "Organization"
+    };
+    repository_selection: string;
+    access_tokens_url: string;
+    repositories_url: string;
+    app_id: number;
+    target_id: number;
+    target_type: string;
+    permissions: Record<string, string>;
+    events: string[];
+    created_at: string;
+    updated_at: string;
+    single_file_name: string | null;
+    has_multiple_single_files?: boolean;
 };
 
 
@@ -136,7 +136,7 @@ export class GithubHelper {
             console.log(url);
         const checkRes = await fetch(
             url,
-                {
+            {
                 headers: {
                     Authorization: `Bearer ${installationToken}`,
                     Accept: "application/vnd.github+json",
@@ -195,7 +195,7 @@ export class GithubHelper {
 
         const url = `https://api.github.com/repos/${this.owner}/${this.repo}/contents/${remotePath}?ref=${this.branch}`;
 
-        const res = await fetch(url, {
+            const res = await fetch(url, {
             headers: {
                 Authorization: `Bearer ${installationToken}`,
                 Accept: "application/vnd.github+json",
@@ -214,4 +214,34 @@ export class GithubHelper {
 
         return data;
     }
+
+    async getGitHistory(path?: string, perPage: number = 50, page: number = 1) {
+        const installationToken = await this.getInstallationToken();
+
+        let url = `https://api.github.com/repos/${this.owner}/${this.repo}/commits?sha=${this.branch}&per_page=${perPage}&page=${page}`;
+            if (path) {
+            url += `&path=${encodeURIComponent(path)}`;
+        }
+
+        const res = await fetch(url, {
+            headers: {
+                Authorization: `Bearer ${installationToken}`,
+                Accept: "application/vnd.github+json",
+            },
+        });
+
+        if (!res.ok) {
+            throw new Error(`Failed to fetch git history: ${res.status}`);
+        }
+
+        const commits = await res.json();
+        return commits.map((c: any) => ({
+            sha: c.sha,
+            message: c.commit.message,
+            author: c.commit.author.name,
+            date: c.commit.author.date,
+            url: c.html_url,
+        }));
+    }
+
 }
