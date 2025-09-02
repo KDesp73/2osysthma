@@ -1,3 +1,6 @@
+import { Circle } from 'lucide-react';
+
+
 export default function Home() {
   return (
     <div className="flex flex-col items-center">
@@ -12,13 +15,35 @@ export default function Home() {
 
       {/* Title & Description */}
       <div className="max-w-2xl text-center my-8 px-4">
-        <h1 className="text-3xl font-bold mb-4">Ready for life</h1>
-        <p className="text-lg text-gray-700">
-            Χτίσε το μέλλον που ονειρεύεσαι. 
+        <h1 className="text-3xl font-bold mb-8">
+            Καλωσήρθατε στο 2ο Σύστημα Προσκόπων Κιλκίς!
+        </h1>
+        <p className="text-lg text-gray-700 mb-8">
+            Εδώ και 50 χρόνια είμαστε μια μεγάλη παρέα που μεγαλώνει μαζί, γελάει, εξερευνά, παίζει και προσφέρε
         </p>
-        <p className="text-lg text-gray-700">
-            Eφοδιάζοντας τους νέους με ικανότητες και αξίες για να καθορίσουν την ζωή τους
-        </p>
+
+        <ul className="space-y-4 list-none">
+            <li className="flex items-start">
+                <span className="block w-3 h-3 rounded-full bg-yellow-500 mr-2 mt-1 shrink-0"></span>
+                <p className="text-lg text-gray-700">
+                    Οι μικροί μας στην Αγέλη (Α΄–Δ΄ Δημοτικού) μαθαίνουν να συνεργάζονται μέσα από παιχνίδι και φαντασία.
+                </p>
+            </li>
+
+            <li className="flex items-start">
+                <span className="block w-3 h-3 rounded-full bg-green-500 mr-2 mt-1 shrink-0"></span>
+                <p className="text-lg text-gray-700">
+                    Η Ομάδα (Ε΄ Δημοτικού – Β΄ Γυμνασίου) ζει τις πρώτες μεγάλες εξερευνήσεις και περιπέτειες.
+                </p>
+            </li>
+
+            <li className="flex items-start">
+                <span className="block w-3 h-3 rounded-full bg-red-500 mr-2 mt-1 shrink-0"></span>
+                <p className="text-lg text-gray-700">
+                    Η Κοινότητα Ανιχνευτών (Γ΄ Γυμνασίου – Γ΄ Λυκείου) παίρνει πρωτοβουλίες, σχεδιάζει δράσεις και αφήνει το δικό της αποτύπωμα στην κοινωνία.
+                </p>
+            </li>
+        </ul>
       </div>
 
       {/* Map */}
