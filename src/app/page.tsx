@@ -22,7 +22,7 @@ export default function Home() {
             Εδώ και 50 χρόνια είμαστε μια παρέα που μεγαλώνει, γελάει, εξερευνά, παίζει και προσφέρει
         </p>
 
-        <ul className="space-y-4 list-none">
+        <ul className="space-y-4 list-none mb-10">
             <li className="flex items-start">
                 <span className="block w-3 h-3 rounded-full bg-yellow-500 mr-2 mt-1 shrink-0"></span>
                 <p className="text-lg text-gray-700">
