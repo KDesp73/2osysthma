@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 export default function UserManager() {
   const [users, setUsers] = useState<{ id: number; username: string }[]>([]);
   const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [password, setPassword] = useState("1234");
 
   async function fetchUsers() {
     const res = await fetch("/api/admin/users");
@@ -24,7 +24,7 @@ export default function UserManager() {
       body: JSON.stringify({ username, password }),
     });
     setUsername("");
-    setPassword("");
+    setPassword("1234");
     fetchUsers();
   }
 
