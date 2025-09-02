@@ -26,7 +26,7 @@ export default function Home() {
             <li className="flex items-start">
                 <span className="block w-3 h-3 rounded-full bg-yellow-500 mr-2 mt-1 shrink-0"></span>
                 <p className="text-lg text-gray-700">
-                    Οι μικροί μας στην Αγέλη (Α΄–Δ΄ Δημοτικού) μαθαίνουν να συνεργάζονται μέσα από παιχνίδι και φαντασία.
+                    Οι μικροί μας στην Αγέλη (Α΄– Δ΄ Δημοτικού) μαθαίνουν να συνεργάζονται μέσα από παιχνίδι και φαντασία.
                 </p>
             </li>
 
