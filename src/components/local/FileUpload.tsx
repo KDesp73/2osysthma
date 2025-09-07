@@ -65,8 +65,6 @@ export default function FileUpload() {
         }))
       );
 
-      console.log("DEBUG: ", filesData);
-
       const res = await fetch("/api/admin/upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
