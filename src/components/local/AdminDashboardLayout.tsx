@@ -49,7 +49,7 @@ export default function AdminDashboardLayout({ children }: Props) {
       {/* Sidebar */}
       <aside
         className={`
-          fixed top-0 left-0 h-full w-64 bg-gray-900 text-white flex flex-col transform transition-transform duration-300 z-30
+          fixed top-0 left-0 h-full w-64 bg-sidebar-primary text-white flex flex-col transform transition-transform duration-300 z-30
           ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} 
           lg:translate-x-0 lg:relative
         `}
@@ -62,8 +62,8 @@ export default function AdminDashboardLayout({ children }: Props) {
               href={op.path}
               className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                 pathname === op.path
-                  ? "bg-gray-700 text-white"
-                  : "text-gray-300 hover:bg-gray-800 hover:text-white"
+                  ? "bg-secondary text-white"
+                  : "text-gray-300 hover:bg-secondary hover:text-white"
               }`}
               onClick={() => setSidebarOpen(false)}
             >
