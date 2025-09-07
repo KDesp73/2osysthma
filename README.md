@@ -1,5 +1,9 @@
 # 2osysthma
 
+## References
+
+- [Branding](https://brand.scout.org/d/HHhYcPGXUAWQ/visual-identity-elements)
+
 ## Services
 
 - [TursoDB](https://turso.tech/)

@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea"
 import Link from "next/link"
 import { Mail, Phone, Instagram, Facebook, Pin } from "lucide-react"
 import Title from "@/components/local/Title"
+import ContactLinks from "@/components/local/ContactLinks"
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -96,38 +97,7 @@ export default function Contact() {
         {/* Contact Links */}
         <section>
           <h2 className="text-xl font-semibold mb-4">Άλλοι τρόποι επικοινωνίας</h2>
-          <ul className="space-y-3 text-gray-700">
-            <li className="flex items-center gap-2">
-              <Mail className="h-5 w-5 text-gray-500" />
-              <a href="mailto:2p_kilkis@sep.org.gr" className="hover:underline">
-                2p_kilkis@sep.org.gr
-              </a>
-            </li>
-            <li className="flex items-center gap-2">
-              <Pin className="h-5 w-5 text-gray-500" />
-              <a href="https://maps.app.goo.gl/riqzmUYBYEczAer39" className="hover:underline">
-                Παπαγιαννάκου 1, Κιλκίς, 61100
-              </a>
-            </li>
-            <li className="flex items-center gap-2">
-              <Phone className="h-5 w-5 text-gray-500" />
-              <a href="tel:+306981927806" className="hover:underline">
-                +30 698 192 7806 (Στάθης Ιορδανίδης)
-              </a>
-            </li>
-            <li className="flex items-center gap-2">
-              <Facebook className="h-5 w-5 text-gray-500" />
-              <Link href="https://www.facebook.com/profile.php?id=61577586039297" target="_blank" className="hover:underline">
-                Facebook 
-              </Link>
-            </li>
-            <li className="flex items-center gap-2">
-              <Instagram className="h-5 w-5 text-gray-500" />
-              <Link href="https://www.instagram.com/2osystimakilkis" target="_blank" className="hover:underline">
-                Instagram
-              </Link>
-            </li>
-          </ul>
+          <ContactLinks />
         </section>
       </div>
     </>
