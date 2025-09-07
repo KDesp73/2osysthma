@@ -1,4 +1,6 @@
-.article {
+.article,
+.editor
+{
   line-height: 1.75;
   color: #1e293b; /* slate-800 */
 

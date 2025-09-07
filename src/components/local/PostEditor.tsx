@@ -5,19 +5,16 @@ import {
     BlockTypeSelect,
     BoldItalicUnderlineToggles,
     DiffSourceToggleWrapper,
-    InsertCodeBlock,
     InsertImage,
     InsertTable,
     InsertThematicBreak,
     MDXEditor, 
     UndoRedo, 
-    codeBlockPlugin, 
-    codeMirrorPlugin, 
     diffSourcePlugin, 
     headingsPlugin, 
     imagePlugin, 
-    linkDialogPlugin, 
     linkPlugin, 
+    linkDialogPlugin, 
     listsPlugin, 
     markdownShortcutPlugin, 
     quotePlugin, 
@@ -27,7 +24,7 @@ import {
 } from "@mdxeditor/editor";
 import "@mdxeditor/editor/style.css";
 
-import "@/styles/post.module.css"
+import style from "@/styles/post.module.css";
 import Link from "next/link";
 import { Info } from "lucide-react";
 
@@ -40,29 +37,28 @@ function MyToolbar() {
             <InsertImage />
             <InsertTable />
             <InsertThematicBreak />
-            <InsertCodeBlock />
             <BlockTypeSelect />
         </DiffSourceToggleWrapper>
     );
 }
 
 const PLUGINS = [
-    toolbarPlugin({ toolbarContents: () => <MyToolbar /> }),
-        listsPlugin(),
+    listsPlugin(),
     quotePlugin(),
-    headingsPlugin({ allowedHeadingLevels: [1, 2, 3] }),
+    headingsPlugin({ allowedHeadingLevels: [2, 3, 4] }),
     linkPlugin(),
     linkDialogPlugin(),
     imagePlugin({
-        imageAutocompleteSuggestions: ['https://via.placeholder.com/150', 'https://via.placeholder.com/150'],
-        imageUploadHandler: async () => Promise.resolve('https://picsum.photos/200/300')
+        imageUploadHandler: () => {
+            return Promise.resolve('https://picsum.photos/200/300')
+        },
+        imageAutocompleteSuggestions: ['https://picsum.photos/200/300', 'https://picsum.photos/200']
     }),
     tablePlugin(),
     thematicBreakPlugin(),
-    codeBlockPlugin({ defaultCodeBlockLanguage: '' }),
-    codeMirrorPlugin({ codeBlockLanguages: { js: 'JavaScript', css: 'CSS', txt: 'Plain Text', tsx: 'TypeScript', '': 'Unspecified' } }),
-    diffSourcePlugin({ viewMode: 'rich-text', diffMarkdown: 'boo' }),
-    markdownShortcutPlugin()
+    diffSourcePlugin({ viewMode: 'rich-text', diffMarkdown: '' }),
+    markdownShortcutPlugin(),
+    toolbarPlugin({ toolbarContents: () => <MyToolbar /> }),
 ]
 
 
@@ -176,7 +172,7 @@ export default function PostEditor() {
               <MDXEditor
                 markdown={blogData.content}
                 onChange={handleContentChange}
-                contentEditableClassName="prose"
+                contentEditableClassName={style.editor}
                 plugins={PLUGINS}
                 className="min-h-[250px] w-full"
               />
