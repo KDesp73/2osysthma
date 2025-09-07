@@ -28,6 +28,8 @@ import {
 import "@mdxeditor/editor/style.css";
 
 import "@/styles/post.module.css"
+import Link from "next/link";
+import { Info } from "lucide-react";
 
 
 function MyToolbar() {
@@ -126,7 +128,15 @@ export default function PostEditor() {
 
 
     return (<>
-        <h2 className="text-2xl font-semibold mb-4">Create Blog Post</h2>
+        <div className="flex flex-row gap-4">
+            <h2 className="text-2xl font-semibold mb-4">Create Blog Post</h2>
+            <Link
+                href={"https://onlinemarkdown.com/syntax"}
+                target="_blank"
+            >
+                <Info />
+            </Link>
+        </div>
 
         <form onSubmit={handleBlogSubmit} className="flex flex-col gap-4">
           <Input
