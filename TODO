@@ -2,8 +2,6 @@ TODO: proper images in gallery
 TODO: uploading images for blogposts
 TODO: removing images/galleries/files from dashboard
 TODO: domain
-TODO: 404 page
-TODO: upload image/file issue
 TODO: better footer
 TODO: dashboard useful links section
 TODO: markdown help links
@@ -16,3 +14,5 @@ DONE: merge similar endpoints
 DONE: lock admin endpoints
 DONE: better home page
 DONE: responsive ui for dashboard
+DONE: 404 page
+DONE: upload image/file issue
