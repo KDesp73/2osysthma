@@ -65,6 +65,8 @@ export default function FileUpload() {
         }))
       );
 
+      console.log("DEBUG: ", filesData);
+
       const res = await fetch("/api/admin/upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -72,7 +74,7 @@ export default function FileUpload() {
       });
 
       const data = await res.json();
-      if (!res.ok || !data.success) throw new Error(data.error || "Upload failed");
+      if (!data.success) throw new Error(data.error || "Upload failed");
 
       alert("Upload successful!");
       setFiles([]);
