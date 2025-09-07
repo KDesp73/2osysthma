@@ -51,18 +51,12 @@ type GitHubInstallation = {
 export class GithubHelper {
     owner: string;
     repo: string;
-    branch: string = "main";
+    branch: string;
 
     constructor(owner?: string, repo?: string, branch?: string) {
-        if(owner === 'undefined' || owner === null) {
-            this.owner = process.env.GITHUB_REPO_OWNER!;
-        } else this.owner = owner!;
-        if(repo === 'undefined' || repo === null) {
-            this.repo = process.env.GITHUB_REPO_NAME!;
-        } else this.repo = repo!;
-        if(!(branch === 'undefined' || branch === null)) {
-            this.branch = branch!;
-        }
+        this.owner = owner ?? process.env.GITHUB_REPO_OWNER!;
+        this.repo = repo ?? process.env.GITHUB_REPO_NAME!;
+        this.branch = branch ?? "main";
     }
 
     genJwt(): string {
