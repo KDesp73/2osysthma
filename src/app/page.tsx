@@ -1,4 +1,5 @@
-import { Circle } from 'lucide-react';
+import StitchSeparator from '@/components/local/StitchSeparator';
+import { Circle, Dice5 } from 'lucide-react';
 
 
 export default function Home() {
@@ -45,6 +46,12 @@ export default function Home() {
             </li>
         </ul>
       </div>
+
+      {/*
+      <StitchSeparator 
+          repeat={20} minAngle={0} maxAngle={0} size={250}
+      />
+      */}
 
       {/* Map */}
       <div className="w-full flex justify-center mb-12">
