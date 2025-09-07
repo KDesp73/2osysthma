@@ -126,17 +126,12 @@ export async function POST(req: Request) {
 
         const gh = new GithubHelper("KDesp73", "2osysthma");
 
-        for (const item of items) {
-            if (item.type === "blog") {
-                blog(gh, item);
-            } else if (item.type === "file") {
-                file(gh, item);
-            } else if (item.type === "image") {
-                image(gh, item);
-            } else {
-                throw new Error(`Unknown item type: ${item.type}`);
-            }
-        }
+        await Promise.all(items.map(item => {
+            if (item.type === "blog") return blog(gh, item);
+            if (item.type === "file") return file(gh, item);
+            if (item.type === "image") return image(gh, item);
+            throw new Error(`Unknown item type: ${item.type}`);
+        }));
 
         return NextResponse.json({ success: true });
     } catch (err) {
