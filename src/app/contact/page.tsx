@@ -4,10 +4,9 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import Link from "next/link"
-import { Mail, Phone, Instagram, Facebook, Pin } from "lucide-react"
 import Title from "@/components/local/Title"
 import ContactLinks from "@/components/local/ContactLinks"
+import Map from "@/components/local/Map";
 
 export default function Contact() {
   const [formData, setFormData] = useState({

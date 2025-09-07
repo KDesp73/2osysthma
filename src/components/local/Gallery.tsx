@@ -4,13 +4,26 @@ import Image from "next/image";
 import { useState } from "react";
 import { FolderImages } from "@/lib/images";
 import Title from "./Title";
+import EmptyState from "./EmptyState";
 
 interface Props {
   folders: FolderImages[];
 }
 
 export default function Gallery({ folders }: Props) {
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+    const hasImages = folders.some(folder => folder.images.length > 0);
+
+    if (!hasImages) {
+        return (<>
+            <Title name="Gallery" />
+            <EmptyState
+                title="No images available"
+                description="There are currently no images to display."
+            />
+        </>);
+    }
 
   return (
       <>
