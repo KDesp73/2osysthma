@@ -50,9 +50,9 @@ const PLUGINS = [
     linkDialogPlugin(),
     imagePlugin({
         imageUploadHandler: () => {
+            // TODO: upload image to a seperate folder and use the resulting url
             return Promise.resolve('https://picsum.photos/200/300')
         },
-        imageAutocompleteSuggestions: ['https://picsum.photos/200/300', 'https://picsum.photos/200']
     }),
     tablePlugin(),
     thematicBreakPlugin(),
