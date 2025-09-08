@@ -72,7 +72,7 @@ export default function ImageUpload() {
         body: JSON.stringify({ items: filesData }),
       });
 
-      if (!res.ok) throw new Error("Upload failed");
+      if (!res.ok) throw new Error("Invalid response");
 
       alert("Upload successful!");
       setImages([]);
@@ -80,7 +80,7 @@ export default function ImageUpload() {
       setCollection("");
     } catch (err) {
       console.error(err);
-      alert("Upload failed");
+      alert("Upload failed: " + err);
     } finally {
       setUploading(false);
     }
