@@ -72,14 +72,13 @@ export default function ImageUpload() {
         body: JSON.stringify({ items: filesData }),
       });
 
-      if (!res.ok) throw new Error("Invalid response");
+      if (!res.ok) throw new Error((await res.json()).error);
 
       alert("Upload successful!");
       setImages([]);
       setNewCollection("");
       setCollection("");
     } catch (err) {
-      console.error(err);
       alert("Upload failed: " + err);
     } finally {
       setUploading(false);
