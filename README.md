@@ -2,6 +2,8 @@
 
 ## References
 
+- [NextJS](https://nextjs.org/)
+- [shadcn](https://ui.shadcn.com/)
 - [Branding](https://brand.scout.org/d/HHhYcPGXUAWQ/visual-identity-elements)
 
 ## Services
