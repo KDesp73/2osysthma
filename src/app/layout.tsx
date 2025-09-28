@@ -3,6 +3,12 @@ import "./globals.css";
 import Layout from "@/components/local/Layout";
 import { Analytics } from "@vercel/analytics/next"
 import Seo from "@/components/local/Seo";
+import { Noto_Serif } from 'next/font/google';
+
+const font = Noto_Serif({
+  subsets: ['latin'],
+  variable: '--font-sans',
+});
 
 export const metadata: Metadata = {
   title: "2ο Σύστημα Προσκόπων Κιλκίς",
@@ -26,7 +32,7 @@ export default function RootLayout({
             siteName={metadata.title as string}
             canonicalUrl="https://2osysthmakilkis.gr"
           />
-          <body>
+          <body className={`${font.variable} antialiased`}>
               <Layout>
                 {children}
                 <Analytics />

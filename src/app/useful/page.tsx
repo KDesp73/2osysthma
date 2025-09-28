@@ -16,6 +16,11 @@ const links = [
     description: "Tο ηλεκτρονικό κατάστημα του Προσκοπικού Πρατηρίου του Σώματος Ελλήνων Προσκόπων",
     href: "https://www.scout-shop.gr/",
   },
+  {
+    name: "Στοιχεία Περιπέτειας",
+    description: "To Eγκόλπιο του Προσκόπου",
+    href: "https://scout-adventure.gr"
+  }
 ];
 
 export default function FilesPage() {
