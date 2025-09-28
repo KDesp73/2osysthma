@@ -30,7 +30,7 @@ export default function Gallery({ folders }: Props) {
       <Title name="Gallery" />
       {folders.map(({ folder, displayName, images }) => (
         <section key={folder} className="mb-12">
-          <h2 className="text-2xl font-semibold mb-4">{displayName}</h2>
+          <h2 className="text-2xl font-semibold mb-4">{displayName.replaceAll("-", " ")}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {images.map((img) => (
               <div
