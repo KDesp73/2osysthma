@@ -34,12 +34,15 @@ async function blog(item: UploadItem) {
   });
   console.log(frontmatter);
 
-  return [
-    {
-      remotePath: `public/content/blog/${slug}.md`,
-      content: frontmatter,
-    },
-  ];
+  return {
+    commitMsg: `Posted '${item.title}'`,
+    files: [
+      {
+        remotePath: `public/content/blog/${slug}.md`,
+        content: frontmatter,
+      },
+    ]
+  } as ReturnType;
 }
 
 // --- FILE ---
@@ -60,16 +63,19 @@ async function file(item: UploadItem, existingMetadata: FileMetadata[] = []) {
   if (idx >= 0) metadata[idx] = entry;
   else metadata.push(entry);
 
-  return [
-    {
-      remotePath: `public/content/files/${item.name}`,
-      content: Buffer.from(item.data, "base64"),
-    },
-    {
-      remotePath: metadataPath,
-      content: Buffer.from(JSON.stringify(metadata, null, 2)),
-    },
-  ];
+  return {
+    commitMsg: `Uploaded file '${item.name}'`,
+    files: [
+      {
+        remotePath: `public/content/files/${item.name}`,
+        content: Buffer.from(item.data),
+      },
+      {
+        remotePath: metadataPath,
+        content: Buffer.from(JSON.stringify(metadata, null, 2)),
+      },
+    ]
+  } as ReturnType;
 }
 
 // --- IMAGE ---
@@ -80,6 +86,8 @@ async function image(
   if (!item.name || !item.data)
     throw new Error("Image items must have name and data");
   if (!item.collection) throw new Error("Image items must have a collection");
+
+  console.log(item);
 
   const metadataPath = "public/content/images/metadata.json";
   const metadata: CollectionMetadata[] = [...existingMetadata];
@@ -100,16 +108,29 @@ async function image(
     index: nextIndex,
   });
 
-  return [
-    {
-      remotePath: `public/content/images/${item.collection}/${item.name}`,
-      content: Buffer.from(item.data, "base64"),
-    },
-    {
-      remotePath: metadataPath,
-      content: Buffer.from(JSON.stringify(metadata, null, 2)),
-    },
-  ];
+  return {
+    commitMsg: `Uploaded image '${item.name}'`,
+    files: [
+      {
+        remotePath: `public/content/images/${item.collection}/${item.name}`,
+        content: Buffer.from(item.data),
+      },
+      {
+        remotePath: metadataPath,
+        content: Buffer.from(JSON.stringify(metadata, null, 2)),
+      },
+    ]
+  } as ReturnType;
+}
+
+interface FileType {
+  remotePath: string;
+  content: ContentType;
+}
+
+interface ReturnType {
+  commitMsg?: string;
+  files: FileType[]
 }
 
 // --- POST HANDLER ---
@@ -125,12 +146,9 @@ export async function POST(req: Request) {
       );
     }
 
-    const gh = new GithubHelper("KDesp73", "2osysthma", "dev");
+    const gh = new GithubHelper();
 
-    const filesToUpload: {
-      remotePath: string;
-      content: ContentType;
-    }[] = [];
+    const filesToUpload: FileType[] = [];
 
     // Load existing metadata once
     let fileMetadata: FileMetadata[] = [];
@@ -151,17 +169,17 @@ export async function POST(req: Request) {
         imageMetadata = JSON.parse(imageMetaRes.content);
     } catch {}
 
+    let result: ReturnType;
     for (const item of items) {
-      let result: { remotePath: string; content: ContentType}[];
       if (item.type === "blog") result = await blog(item);
       else if (item.type === "file") result = await file(item, fileMetadata);
       else if (item.type === "image") result = await image(item, imageMetadata);
       else throw new Error(`Unknown item type: ${item.type}`);
 
-      filesToUpload.push(...result);
+      filesToUpload.push(...result.files);
     }
 
-    const res = await gh.upload(filesToUpload, "Batch upload");
+    const res = await gh.upload(filesToUpload, filesToUpload.length == 1 ? result!!.commitMsg ?? "Upload" : "Batch upload");
     if (!res.ok) throw new Error("Failed to upload files to GitHub");
 
     return NextResponse.json({ success: true });

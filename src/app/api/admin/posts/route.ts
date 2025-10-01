@@ -8,12 +8,18 @@ export async function DELETE(req: NextRequest) {
     const { title } = body;
     const slug = createSlug(title);
 
-    const gh = new GithubHelper("KDesp73", "2osysthma");
+    const gh = new GithubHelper();
 
-    const res = await gh.remove(
-      [`public/content/blog/${slug}.md`],
-      `Removed blog post: ${title}`,
-    );
+    let res;
+    try {
+      res = await gh.remove(
+        [`public/content/blog/${slug}.md`],
+        `Removed blog post: ${title}`,
+      );
+    } catch (err: unknown) {
+      console.error(err instanceof Error ? err.message : JSON.stringify(err));
+      throw new Error(err instanceof Error ? err.message : JSON.stringify(err));
+    }
 
     if (!res.ok) throw new Error("Failed removing blog post");
 

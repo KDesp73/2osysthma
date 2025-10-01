@@ -55,9 +55,9 @@ export class GithubHelper {
   branch: string;
 
   constructor(owner?: string, repo?: string, branch?: string) {
-    this.owner = owner ?? process.env.GITHUB_REPO_OWNER!;
-    this.repo = repo ?? process.env.GITHUB_REPO_NAME!;
-    this.branch = branch ?? "main";
+    this.owner = owner ?? process.env.GITHUB_USER!;
+    this.repo = repo ?? process.env.GITHUB_REPO!;
+    this.branch = branch ?? process.env.GITHUB_BRANCH ?? "main";
   }
 
   genJwt(): string {
@@ -274,83 +274,70 @@ export class GithubHelper {
     if (!paths.length) throw new Error("No files specified for removal");
 
     const installationToken = await this.getInstallationToken();
+    const headers = (token: string) => ({
+      Authorization: `Bearer ${token}`,
+      Accept: "application/vnd.github+json",
+    });
 
-    // Get latest commit SHA and tree
-    const refRes = await fetch(
-      `https://api.github.com/repos/${this.owner}/${this.repo}/git/ref/heads/${this.branch}`,
-      {
-        headers: {
-          Authorization: `Bearer ${installationToken}`,
-          Accept: "application/vnd.github+json",
-        },
-      },
-    );
+    const checkResponse = async (res: Response, step: string) => {
+      if (!res.ok) {
+        const errorBody = await res.text();
+        throw new Error(`GitHub API Error during ${step}: ${res.status} ${res.statusText}\nDetails: ${errorBody}`);
+      }
+    };
+
+    // 1. Get latest commit SHA
+    const refUrl = `https://api.github.com/repos/${this.owner}/${this.repo}/git/ref/heads/${this.branch}`;
+      const refRes = await fetch(refUrl, { headers: headers(installationToken) });
+    await checkResponse(refRes, "fetching branch ref");
     const refData = await refRes.json();
     const latestCommitSha = refData.object.sha;
 
-    const commitRes = await fetch(
-      `https://api.github.com/repos/${this.owner}/${this.repo}/git/commits/${latestCommitSha}`,
-      {
-        headers: {
-          Authorization: `Bearer ${installationToken}`,
-          Accept: "application/vnd.github+json",
-        },
-      },
-    );
+    // 2. Get the latest commit tree SHA
+    const commitUrl = `https://api.github.com/repos/${this.owner}/${this.repo}/git/commits/${latestCommitSha}`;
+      const commitRes = await fetch(commitUrl, { headers: headers(installationToken) });
+    await checkResponse(commitRes, "fetching latest commit");
     const commitData = await commitRes.json();
     const baseTreeSha = commitData.tree.sha;
 
-    // Prepare tree with `null` content to delete files
-    const tree = paths.map((remotePath) => ({
-      path: remotePath.replace(/ /g, "-"),
-      mode: "100644",
+    // 3. Build a new tree that explicitly deletes the files
+    const deleteEntries = paths.map(path => ({
+      path,
+      mode: "100644", // or "100755" if executable, "040000" for dirs
       type: "blob",
-      sha: null, // deletion
+      sha: null, // this is the key: null SHA = remove
     }));
 
-    // Create tree for deletion
-    const treeRes = await fetch(
-      `https://api.github.com/repos/${this.owner}/${this.repo}/git/trees`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${installationToken}`,
-          Accept: "application/vnd.github+json",
-        },
-        body: JSON.stringify({ base_tree: baseTreeSha, tree }),
-      },
-    );
-    const treeData = await treeRes.json();
+    // 4. Create new tree
+    const createTreeRes = await fetch(`https://api.github.com/repos/${this.owner}/${this.repo}/git/trees`, {
+      method: "POST",
+    headers: headers(installationToken),
+    body: JSON.stringify({ base_tree: baseTreeSha, tree: deleteEntries }),
+    });
+    await checkResponse(createTreeRes, "creating new tree");
+    const createdTreeData = await createTreeRes.json();
 
-    // Create commit
-    const newCommitRes = await fetch(
-      `https://api.github.com/repos/${this.owner}/${this.repo}/git/commits`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${installationToken}`,
-          Accept: "application/vnd.github+json",
-        },
-        body: JSON.stringify({
-          message: commitMsg,
-          tree: treeData.sha,
-          parents: [latestCommitSha],
-        }),
-      },
-    );
+    // 5. Create new commit
+    const newCommitRes = await fetch(`https://api.github.com/repos/${this.owner}/${this.repo}/git/commits`, {
+      method: "POST",
+    headers: headers(installationToken),
+    body: JSON.stringify({
+      message: commitMsg,
+      tree: createdTreeData.sha,
+      parents: [latestCommitSha],
+    }),
+    });
+    await checkResponse(newCommitRes, "creating new commit");
     const newCommitData = await newCommitRes.json();
 
-    // Update branch ref
-    return fetch(
-      `https://api.github.com/repos/${this.owner}/${this.repo}/git/refs/heads/${this.branch}`,
-      {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${installationToken}`,
-          Accept: "application/vnd.github+json",
-        },
-        body: JSON.stringify({ sha: newCommitData.sha }),
-      },
-    );
+    // 6. Update branch ref
+    const updateRefRes = await fetch(`https://api.github.com/repos/${this.owner}/${this.repo}/git/refs/heads/${this.branch}`, {
+      method: "PATCH",
+    headers: headers(installationToken),
+    body: JSON.stringify({ sha: newCommitData.sha }),
+    });
+    await checkResponse(updateRefRes, "updating branch ref");
+
+    return updateRefRes;
   }
 }
