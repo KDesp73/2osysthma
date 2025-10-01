@@ -32,7 +32,6 @@ async function blog(item: UploadItem) {
     tags: item.tags,
     slug,
   });
-  console.log(frontmatter);
 
   return {
     commitMsg: `Posted '${item.title}'`,
@@ -72,7 +71,7 @@ async function file(item: UploadItem, existingMetadata: FileMetadata[] = []) {
       },
       {
         remotePath: metadataPath,
-        content: Buffer.from(JSON.stringify(metadata, null, 2)),
+        content: JSON.stringify(metadata, null, 2),
       },
     ]
   } as ReturnType;
@@ -86,8 +85,6 @@ async function image(
   if (!item.name || !item.data)
     throw new Error("Image items must have name and data");
   if (!item.collection) throw new Error("Image items must have a collection");
-
-  console.log(item);
 
   const metadataPath = "public/content/images/metadata.json";
   const metadata: CollectionMetadata[] = [...existingMetadata];
@@ -113,11 +110,11 @@ async function image(
     files: [
       {
         remotePath: `public/content/images/${item.collection}/${item.name}`,
-        content: Buffer.from(item.data),
+        content: item.data,
       },
       {
         remotePath: metadataPath,
-        content: Buffer.from(JSON.stringify(metadata, null, 2)),
+        content: JSON.stringify(metadata, null, 2),
       },
     ]
   } as ReturnType;
@@ -138,6 +135,8 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const items: UploadItem[] = body.items;
+
+    console.log(body);
     
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
@@ -179,7 +178,12 @@ export async function POST(req: Request) {
       filesToUpload.push(...result.files);
     }
 
-    const res = await gh.upload(filesToUpload, filesToUpload.length == 1 ? result!!.commitMsg ?? "Upload" : "Batch upload");
+    console.log(filesToUpload);
+    const commitMsg = filesToUpload.length == 1 || filesToUpload.length == 2
+      ? result!!.commitMsg ?? "Upload" 
+      : "Batch upload";
+
+    const res = await gh.upload(filesToUpload, commitMsg);
     if (!res.ok) throw new Error("Failed to upload files to GitHub");
 
     return NextResponse.json({ success: true });
