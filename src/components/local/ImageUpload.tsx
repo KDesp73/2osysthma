@@ -99,7 +99,6 @@ export default function ImageManager() {
         uploadImages.map(async (img) => {
           const arrayBuffer = await img.file!.arrayBuffer();
           const uint8 = new Uint8Array(arrayBuffer);
-          // Convert to base64 without Node Buffer
           let binary = "";
           uint8.forEach((b) => (binary += String.fromCharCode(b)));
           const base64 = btoa(binary);

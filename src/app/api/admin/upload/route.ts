@@ -63,7 +63,7 @@ async function file(item: UploadItem, existingMetadata: FileMetadata[] = []) {
     commitMsg: `Uploaded file '${item.name}'`,
     file:{
       remotePath: `public/content/files/${item.name}`,
-      content: item.data,
+      content: Buffer.from(item.data, "base64"),
     },
     metadata
   } as ReturnType;
@@ -100,7 +100,7 @@ async function image(
     commitMsg: `Uploaded image '${item.name}'`,
     file: {
       remotePath: `public/content/images/${item.collection}/${item.name}`,
-      content: item.data,
+      content: Buffer.from(item.data, "base64"),
     },
     metadata: metadata
   } as ReturnType;
