@@ -34,6 +34,14 @@
       {
         "path": "/test/OIP-3933394303.jpg",
         "index": 0
+      },
+      {
+        "path": "/content/images/test/OIP-3933394303.jpg",
+        "index": 1
+      },
+      {
+        "path": "/content/images/test/OIP-3783054283.jpg",
+        "index": 2
       }
     ]
   }
