@@ -17,13 +17,13 @@ interface MetadataFolder {
 }
 
 interface Props {
-  folders: MetadataFolder[];
+  collections: MetadataFolder[];
 }
 
-export default function Gallery({ folders }: Props) {
+export default function Gallery({ collections }: Props) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  const hasImages = folders.some(folder => folder.images.length > 0);
+  const hasImages = collections.some(folder => folder.images.length > 0);
 
   if (!hasImages) {
     return (
@@ -40,19 +40,19 @@ export default function Gallery({ folders }: Props) {
   return (
     <>
       <Title name="Gallery" />
-      {folders.map(({ name, date, images }) => (
+      {collections.sort((a, b) => b.date.localeCompare(a.date)).map(({ name, date, images }) => (
         <section key={name + date} className="mb-12">
           <h2 className="text-2xl font-semibold mb-1">{name}</h2>
           <p className="text-sm text-gray-500 mb-4">{date}</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {images.map((img) => (
+            {images.sort((a, b) => a.index - b.index).map((img) => (
               <div
                 key={img.index}
                 className="overflow-hidden rounded-lg shadow-lg hover:scale-105 transition-transform cursor-pointer"
-                onClick={() => setSelectedImage(`/content/images${img.path}`)}
+                onClick={() => setSelectedImage(img.path)}
               >
                 <Image
-                  src={`/content/images${img.path}`}
+                  src={img.path}
                   alt={`${name} - ${img.index}`}
                   width={500}
                   height={500}
