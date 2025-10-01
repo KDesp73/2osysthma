@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import matter from "gray-matter";
 import { ContentType, GithubHelper } from "@/lib/GithubHelper";
 import { createSlug } from "@/lib/posts";
-import { CollectionMetadata, FileMetadata } from "@/lib/metadata";
+import { CollectionMetadata, FileMetadata, ImageMetadata } from "@/lib/metadata";
 
 interface UploadItem {
   type: "blog" | "file" | "image";
@@ -35,12 +35,10 @@ async function blog(item: UploadItem) {
 
   return {
     commitMsg: `Posted '${item.title}'`,
-    files: [
-      {
-        remotePath: `public/content/blog/${slug}.md`,
-        content: frontmatter,
-      },
-    ]
+    file: {
+      remotePath: `public/content/blog/${slug}.md`,
+      content: frontmatter,
+    },
   } as ReturnType;
 }
 
@@ -49,7 +47,6 @@ async function file(item: UploadItem, existingMetadata: FileMetadata[] = []) {
   if (!item.name || !item.data)
     throw new Error("File items must have name and data");
 
-  const metadataPath = "public/content/files/metadata.json";
   const metadata: FileMetadata[] = [...existingMetadata];
 
   const entry: FileMetadata = {
@@ -64,16 +61,11 @@ async function file(item: UploadItem, existingMetadata: FileMetadata[] = []) {
 
   return {
     commitMsg: `Uploaded file '${item.name}'`,
-    files: [
-      {
-        remotePath: `public/content/files/${item.name}`,
-        content: item.data,
-      },
-      {
-        remotePath: metadataPath,
-        content: JSON.stringify(metadata, null, 2),
-      },
-    ]
+    file:{
+      remotePath: `public/content/files/${item.name}`,
+      content: item.data,
+    },
+    metadata
   } as ReturnType;
 }
 
@@ -86,7 +78,6 @@ async function image(
     throw new Error("Image items must have name and data");
   if (!item.collection) throw new Error("Image items must have a collection");
 
-  const metadataPath = "public/content/images/metadata.json";
   const metadata: CollectionMetadata[] = [...existingMetadata];
 
   let collection = metadata.find((c) => c.name === item.collection);
@@ -101,22 +92,17 @@ async function image(
 
   const nextIndex = collection.images.length;
   collection.images.push({
-    path: `/${item.collection}/${item.name}`,
+    path: `/content/images/${item.collection}/${item.name}`,
     index: nextIndex,
   });
 
   return {
     commitMsg: `Uploaded image '${item.name}'`,
-    files: [
-      {
-        remotePath: `public/content/images/${item.collection}/${item.name}`,
-        content: item.data,
-      },
-      {
-        remotePath: metadataPath,
-        content: JSON.stringify(metadata, null, 2),
-      },
-    ]
+    file: {
+      remotePath: `public/content/images/${item.collection}/${item.name}`,
+      content: item.data,
+    },
+    metadata: metadata
   } as ReturnType;
 }
 
@@ -127,7 +113,8 @@ interface FileType {
 
 interface ReturnType {
   commitMsg?: string;
-  files: FileType[]
+  file: FileType;
+  metadata?: CollectionMetadata[] | FileMetadata[];
 }
 
 // --- POST HANDLER ---
@@ -136,8 +123,6 @@ export async function POST(req: Request) {
     const body = await req.json();
     const items: UploadItem[] = body.items;
 
-    console.log(body);
-    
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
         { success: false, error: "No items provided" },
@@ -154,34 +139,57 @@ export async function POST(req: Request) {
     let imageMetadata: CollectionMetadata[] = [];
 
     try {
-      const fileMetaRes = await gh.getFile(
-        "public/content/files/metadata.json",
-      );
+      const fileMetaRes = await gh.getFile("public/content/files/metadata.json");
       if (fileMetaRes?.content) fileMetadata = JSON.parse(fileMetaRes.content);
     } catch {}
 
     try {
-      const imageMetaRes = await gh.getFile(
-        "public/content/images/metadata.json",
-      );
-      if (imageMetaRes?.content)
-        imageMetadata = JSON.parse(imageMetaRes.content);
+      const imageMetaRes = await gh.getFile("public/content/images/metadata.json");
+      if (imageMetaRes?.content) imageMetadata = JSON.parse(imageMetaRes.content);
     } catch {}
 
-    let result: ReturnType;
-    for (const item of items) {
-      if (item.type === "blog") result = await blog(item);
-      else if (item.type === "file") result = await file(item, fileMetadata);
-      else if (item.type === "image") result = await image(item, imageMetadata);
-      else throw new Error(`Unknown item type: ${item.type}`);
+    let lastCommitMsg = "Upload";
+    let touchedFiles = false;
+    let touchedImages = false;
 
-      filesToUpload.push(...result.files);
+    for (const item of items) {
+      let result: ReturnType;
+
+      if (item.type === "blog") {
+        result = await blog(item);
+      } else if (item.type === "file") {
+        result = await file(item, fileMetadata);
+        fileMetadata = result.metadata as FileMetadata[];
+        touchedFiles = true;
+      } else if (item.type === "image") {
+        result = await image(item, imageMetadata);
+        imageMetadata = result.metadata as CollectionMetadata[];
+        touchedImages = true;
+      } else {
+        throw new Error(`Unknown item type: ${item.type}`);
+      }
+
+      lastCommitMsg = result.commitMsg ?? lastCommitMsg;
+      filesToUpload.push(result.file);
     }
 
-    console.log(filesToUpload);
-    const commitMsg = filesToUpload.length == 1 || filesToUpload.length == 2
-      ? result!!.commitMsg ?? "Upload" 
-      : "Batch upload";
+    // Append metadata once if needed
+    if (touchedFiles) {
+      filesToUpload.push({
+        remotePath: "public/content/files/metadata.json",
+        content: JSON.stringify(fileMetadata, null, 2),
+      });
+    }
+    if (touchedImages) {
+      filesToUpload.push({
+        remotePath: "public/content/images/metadata.json",
+        content: JSON.stringify(imageMetadata, null, 2),
+      });
+    }
+
+    // Decide commit message
+    const commitMsg =
+      filesToUpload.length <= 2 ? lastCommitMsg : "Batch upload";
 
     const res = await gh.upload(filesToUpload, commitMsg);
     if (!res.ok) throw new Error("Failed to upload files to GitHub");
@@ -189,6 +197,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error(err);
-    return NextResponse.json({ success: false, error: (err as Error).message });
+    return NextResponse.json({
+      success: false,
+      error: (err as Error).message,
+    });
   }
 }

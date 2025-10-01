@@ -32,7 +32,7 @@ interface MetadataFolder {
 }
 
 interface ImageUploadPreview {
-  file?: File; // optional, if editing existing image no file
+  file?: File;
   preview: string;
   name: string;
   collection: string;
@@ -76,7 +76,7 @@ export default function ImageManager() {
       file,
       preview: URL.createObjectURL(file),
       name: file.name,
-      collection: collection || newCollection || "",
+      collection: collection || newCollection,
       isNew: true,
     }));
 
@@ -88,11 +88,6 @@ export default function ImageManager() {
     setUploading(true);
 
     let finalCollection = newCollection || collection;
-    if (newCollection) {
-      const datePrefix = new Date().toISOString().split("T")[0];
-      finalCollection = `${datePrefix}-${newCollection}`;
-    }
-
     if (!finalCollection) {
       alert("Please select or create a collection");
       setUploading(false);
@@ -102,20 +97,20 @@ export default function ImageManager() {
     try {
       const filesData = await Promise.all(
         uploadImages.map(async (img) => {
-          const targetCollection = img.collection || finalCollection;
           const arrayBuffer = await img.file!.arrayBuffer();
-
-          const base64String = btoa(
-            String.fromCharCode(...new Uint8Array(arrayBuffer))
-          );
+          const uint8 = new Uint8Array(arrayBuffer);
+          // Convert to base64 without Node Buffer
+          let binary = "";
+          uint8.forEach((b) => (binary += String.fromCharCode(b)));
+          const base64 = btoa(binary);
 
           return {
             type: "image",
-            name: img.name,
-            collection: targetCollection,
-            data: base64String,
+            name: img.file!.name,
+            collection: finalCollection,
+            data: base64,
           };
-        })
+        }),
       );
 
       const res = await fetch("/api/admin/upload", {
@@ -130,6 +125,9 @@ export default function ImageManager() {
       setUploadImages([]);
       setNewCollection("");
       setCollection("");
+
+      // refresh images list
+      setImages((prev) => [...prev, ...uploadImages]);
     } catch (err) {
       alert("Upload failed: " + err);
     } finally {
