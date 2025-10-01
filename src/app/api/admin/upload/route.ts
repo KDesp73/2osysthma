@@ -68,7 +68,7 @@ async function file(item: UploadItem, existingMetadata: FileMetadata[] = []) {
     files: [
       {
         remotePath: `public/content/files/${item.name}`,
-        content: Buffer.from(item.data),
+        content: item.data,
       },
       {
         remotePath: metadataPath,

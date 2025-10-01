@@ -104,13 +104,18 @@ export default function ImageManager() {
         uploadImages.map(async (img) => {
           const targetCollection = img.collection || finalCollection;
           const arrayBuffer = await img.file!.arrayBuffer();
+
+          const base64String = btoa(
+            String.fromCharCode(...new Uint8Array(arrayBuffer))
+          );
+
           return {
             type: "image",
             name: img.name,
             collection: targetCollection,
-            data: arrayBuffer,
+            data: base64String,
           };
-        }),
+        })
       );
 
       const res = await fetch("/api/admin/upload", {
