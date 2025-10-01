@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import Title from "@/components/local/Title"
-import ContactLinks from "@/components/local/ContactLinks"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import Title from "@/components/local/Title";
+import ContactLinks from "@/components/local/ContactLinks";
 import Map from "@/components/local/Map";
 
 export default function Contact() {
@@ -13,44 +13,45 @@ export default function Contact() {
     name: "",
     email: "",
     message: "",
-  })
+  });
 
-  const [status, setStatus] = useState<null | "success" | "error">(null)
-  const [loading, setLoading] = useState(false)
+  const [status, setStatus] = useState<null | "success" | "error">(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
-  }
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setStatus(null)
+    e.preventDefault();
+    setLoading(true);
+    setStatus(null);
 
     try {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
-      })
+      });
 
       if (res.ok) {
-        setStatus("success")
-        setFormData({ name: "", email: "", message: "" })
+        setStatus("success");
+        setFormData({ name: "", email: "", message: "" });
       } else {
-        setStatus("error")
+        setStatus("error");
       }
     } catch (error) {
-      console.error("Submit error:", error)
-      setStatus("error")
+      console.error("Submit error:", error);
+      setStatus("error");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <>
-
       <Title name="Επικοινώνησε μαζί μας!" />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
         {/* Contact Form */}
@@ -86,19 +87,25 @@ export default function Contact() {
           </form>
 
           {status === "success" && (
-            <p className="mt-2 text-green-600">Το μήνυμά σας στάλθηκε επιτυχώς!</p>
+            <p className="mt-2 text-green-600">
+              Το μήνυμά σας στάλθηκε επιτυχώς!
+            </p>
           )}
           {status === "error" && (
-            <p className="mt-2 text-red-600">Σφάλμα κατά την αποστολή. Προσπαθήστε ξανά.</p>
+            <p className="mt-2 text-red-600">
+              Σφάλμα κατά την αποστολή. Προσπαθήστε ξανά.
+            </p>
           )}
         </section>
 
         {/* Contact Links */}
         <section>
-          <h2 className="text-xl font-semibold mb-4">Άλλοι τρόποι επικοινωνίας</h2>
+          <h2 className="text-xl font-semibold mb-4">
+            Άλλοι τρόποι επικοινωνίας
+          </h2>
           <ContactLinks />
         </section>
       </div>
     </>
-  )
+  );
 }

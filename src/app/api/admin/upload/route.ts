@@ -2,144 +2,174 @@ import { NextResponse } from "next/server";
 import matter from "gray-matter";
 import { GithubHelper } from "@/lib/GithubHelper";
 import { createSlug } from "@/lib/posts";
+import { CollectionMetadata, FileMetadata } from "@/lib/metadata";
 
 interface UploadItem {
   type: "blog" | "file" | "image";
-  title?: string;        // for blog title or file title
-  description?: string;  // optional description for blog/file
-  author?: string;       // for blog
-  tags?: string[];       // for blog
-  content?: string;      // for blog
-  name?: string;         // for file/image filename
-  data?: string;         // base64 string for file/image
+  title?: string;
+  description?: string;
+  author?: string;
+  tags?: string[];
+  content?: string;
+  name?: string; // filename
+  data?: string; // base64 string
+  collection?: string; // for images
 }
 
-interface FileMetadata {
-  filename: string;
-  title: string;
-  description: string;
+// --- BLOG ---
+async function blog(item: UploadItem) {
+  if (!item.title || !item.content)
+    throw new Error("Blog items must have title and content");
+
+  const slug = createSlug(item.title);
+  if (!slug) throw new Error("Cannot generate slug from title");
+
+
+  const frontmatter = matter.stringify(item.content, {
+    title: item.title,
+    description: item.description,
+    author: item.author,
+    date: new Date().toISOString(),
+    tags: item.tags,
+    slug,
+  });
+  console.log(frontmatter);
+
+  return [
+    {
+      remotePath: `public/content/blog/${slug}.md`,
+      content: Buffer.from(frontmatter),
+    },
+  ];
 }
 
-async function blog(gh: GithubHelper, item: UploadItem) {
-    if (!item.title || !item.content) {
-        throw new Error("Blog items must have title and content");
-    }
+// --- FILE ---
+async function file(item: UploadItem, existingMetadata: FileMetadata[] = []) {
+  if (!item.name || !item.data)
+    throw new Error("File items must have name and data");
 
-    const slug = createSlug(item.title);
-    if (!slug) throw new Error("Cannot generate slug from title");
+  const metadataPath = "public/content/files/metadata.json";
+  const metadata: FileMetadata[] = [...existingMetadata];
 
-    try {
-        await gh.getFile(`public/content/blog/${slug}.md`);
-        throw new Error(`A blog post with the title "${item.title}" already exists.`);
-    } catch (err: unknown) {
-        if (!(err as Error).message.includes("Failed to fetch file")) {
-            // If the error is not "file not found", rethrow
-            throw err;
-        }
-    }
+  const entry: FileMetadata = {
+    filename: item.name.replace(/ /g, "-"),
+    title: item.title || item.name,
+    description: item.description || "",
+  };
 
-    const frontmatter = matter.stringify(item.content, {
-        title: item.title,
-        description: item.description,
-        author: item.author,
-        date: new Date().toISOString(),
-        tags: item.tags,
-        slug,
-    });
+  const idx = metadata.findIndex((m) => m.filename === item.name);
+  if (idx >= 0) metadata[idx] = entry;
+  else metadata.push(entry);
 
-    const res = await gh.upload(
-        `public/content/blog/${slug}.md`,
-        `Add blog post: ${item.title}`,
-        Buffer.from(frontmatter).toString("base64")
-    );
-
-    if (!res.ok) throw new Error(`Failed to upload blog: ${item.title}`);
+  return [
+    {
+      remotePath: `public/content/files/${item.name}`,
+      content: Buffer.from(item.data, "base64"),
+    },
+    {
+      remotePath: metadataPath,
+      content: Buffer.from(JSON.stringify(metadata, null, 2)),
+    },
+  ];
 }
 
-async function file(gh: GithubHelper, item: UploadItem) {
-    if (!item.name || !item.data) {
-        throw new Error("File items must have name and data");
-    }
+// --- IMAGE ---
+async function image(
+  item: UploadItem,
+  existingMetadata: CollectionMetadata[] = [],
+) {
+  if (!item.name || !item.data)
+    throw new Error("Image items must have name and data");
+  if (!item.collection) throw new Error("Image items must have a collection");
 
-    const fileMetadataPath = "public/content/files/metadata.json";
+  const metadataPath = "public/content/images/metadata.json";
+  const metadata: CollectionMetadata[] = [...existingMetadata];
 
-    let currentMetadata: FileMetadata[] = [];
-    try {
-        const res = await gh.getFile(fileMetadataPath);
-        if (res && res.content) {
-            currentMetadata = JSON.parse(res.content);
-        }
-    } catch {
-        console.log("No existing file metadata, creating new one.");
-    }
-
-    const res = await gh.uploadFile(
-        `public/content/files/${item.name}`,
-        `Uploaded file: ${item.name}`,
-        Buffer.from(item.data, "base64")
-    );
-    if (!res.ok) throw new Error(`Failed to upload file: ${item.name}`);
-
-    const existingIndex = currentMetadata.findIndex(
-        (m) => m.filename === item.name
-    );
-    const metadataEntry: FileMetadata = {
-        filename: item.name.replace(/ /g, "-"),
-        title: item.title || item.name,
-        description: item.description || "",
+  let collection = metadata.find((c) => c.name === item.collection);
+  if (!collection) {
+    collection = {
+      name: item.collection,
+      date: new Date().toISOString().split("T")[0],
+      images: [],
     };
-    if (existingIndex >= 0) currentMetadata[existingIndex] = metadataEntry;
-    else currentMetadata.push(metadataEntry);
+    metadata.push(collection);
+  }
 
-    // upload updated file metadata
-    await gh.uploadFile(
-        fileMetadataPath,
-        "Update metadata.json",
-        Buffer.from(JSON.stringify(currentMetadata, null, 2))
-    );
+  const nextIndex = collection.images.length;
+  collection.images.push({
+    path: `/${item.collection}/${item.name}`,
+    index: nextIndex,
+  });
+
+  return [
+    {
+      remotePath: `public/content/images/${item.collection}/${item.name}`,
+      content: Buffer.from(item.data, "base64"),
+    },
+    {
+      remotePath: metadataPath,
+      content: Buffer.from(JSON.stringify(metadata, null, 2)),
+    },
+  ];
 }
 
-async function image(gh: GithubHelper, item: UploadItem) {
-    if (!item.name || !item.data) {
-        throw new Error("Image items must have name and data");
-    }
-    const res = await gh.uploadFile(
-        `public/content/images/${item.name}`,
-        `Uploaded image: ${item.name}`,
-        Buffer.from(item.data, "base64")
-    );
-    if (!res.ok) throw new Error(`Failed to upload image: ${item.name}`);
-}
-
-
+// --- POST HANDLER ---
 export async function POST(req: Request) {
-    try {
-        const body = await req.json();
-        const items: UploadItem[] = body.items;
+  try {
+    const body = await req.json();
+    const items: UploadItem[] = body.items;
 
-        if (!items || !Array.isArray(items) || items.length === 0) {
-            return NextResponse.json(
-                { success: false, error: "No items provided" },
-                { status: 400 }
-            );
-        }
-
-        const gh = new GithubHelper("KDesp73", "2osysthma");
-
-        await Promise.all(items.map(item => {
-            if (item.type === "blog") return blog(gh, item);
-            if (item.type === "file") return file(gh, item);
-            if (item.type === "image") return image(gh, item);
-            throw new Error(`Unknown item type: ${item.type}`);
-        }));
-
-        return NextResponse.json({ success: true });
-    } catch (err) {
-        console.error(err);
-        return NextResponse.json({
-            success: false,
-            error: (err as Error).message,
-        });
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return NextResponse.json(
+        { success: false, error: "No items provided" },
+        { status: 400 },
+      );
     }
-}
 
+    const gh = new GithubHelper("KDesp73", "2osysthma");
+
+    const filesToUpload: {
+      remotePath: string;
+      content: Buffer | ArrayBuffer | Uint8Array;
+    }[] = [];
+
+    // Load existing metadata once
+    let fileMetadata: FileMetadata[] = [];
+    let imageMetadata: CollectionMetadata[] = [];
+
+    try {
+      const fileMetaRes = await gh.getFile(
+        "public/content/files/metadata.json",
+      );
+      if (fileMetaRes?.content) fileMetadata = JSON.parse(fileMetaRes.content);
+    } catch {}
+
+    try {
+      const imageMetaRes = await gh.getFile(
+        "public/content/images/metadata.json",
+      );
+      if (imageMetaRes?.content)
+        imageMetadata = JSON.parse(imageMetaRes.content);
+    } catch {}
+
+    for (const item of items) {
+      let result: { remotePath: string; content: Buffer }[];
+      if (item.type === "blog") result = await blog(item);
+      else if (item.type === "file") result = await file(item, fileMetadata);
+      else if (item.type === "image") result = await image(item, imageMetadata);
+      else throw new Error(`Unknown item type: ${item.type}`);
+
+      filesToUpload.push(...result);
+    }
+
+    console.log(filesToUpload);
+
+    // const res = await gh.upload(filesToUpload, "Batch upload");
+    // if (!res.ok) throw new Error("Failed to upload files to GitHub");
+
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json({ success: false, error: (err as Error).message });
+  }
+}

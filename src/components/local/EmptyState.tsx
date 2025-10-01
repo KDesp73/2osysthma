@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import React from "react"
+import React from "react";
 
 interface EmptyStateProps {
-  title?: string
-  description?: string
-  icon?: React.ReactNode
-  action?: React.ReactNode
-  className?: string
+  title?: string;
+  description?: string;
+  icon?: React.ReactNode;
+  action?: React.ReactNode;
+  className?: string;
 }
 
 export default function EmptyState({
@@ -26,5 +26,5 @@ export default function EmptyState({
       <p className="text-gray-500 mb-6">{description}</p>
       {action && <div>{action}</div>}
     </div>
-  )
+  );
 }
