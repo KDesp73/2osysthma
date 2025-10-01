@@ -1,7 +1,6 @@
 "use client";
 
 import ImageUpload from "@/components/local/ImageUpload";
-import FileUpload from "@/components/local/FileUpload";
 
 export default function DashboardContent() {
   return (
@@ -9,10 +8,7 @@ export default function DashboardContent() {
       <div className="flex-1">
         <ImageUpload />
       </div>
-
-      <div className="flex-1">
-        <FileUpload />
-      </div>
     </div>
   );
 }
+

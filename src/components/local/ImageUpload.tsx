@@ -58,7 +58,7 @@ export default function ImageManager() {
 
       const existing: ImageUploadPreview[] = data.flatMap((folder) =>
         folder.images.map((img) => ({
-          preview: `/content/images${img.path}`,
+          preview: img.path,
           name: img.path.split("/").pop() || "",
           collection: folder.name,
         })),

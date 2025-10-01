@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import matter from "gray-matter";
-import { GithubHelper } from "@/lib/GithubHelper";
+import { ContentType, GithubHelper } from "@/lib/GithubHelper";
 import { createSlug } from "@/lib/posts";
 import { CollectionMetadata, FileMetadata } from "@/lib/metadata";
 
@@ -37,7 +37,7 @@ async function blog(item: UploadItem) {
   return [
     {
       remotePath: `public/content/blog/${slug}.md`,
-      content: Buffer.from(frontmatter),
+      content: frontmatter,
     },
   ];
 }
@@ -117,7 +117,7 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const items: UploadItem[] = body.items;
-
+    
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
         { success: false, error: "No items provided" },
@@ -125,11 +125,11 @@ export async function POST(req: Request) {
       );
     }
 
-    const gh = new GithubHelper("KDesp73", "2osysthma");
+    const gh = new GithubHelper("KDesp73", "2osysthma", "dev");
 
     const filesToUpload: {
       remotePath: string;
-      content: Buffer | ArrayBuffer | Uint8Array;
+      content: ContentType;
     }[] = [];
 
     // Load existing metadata once
@@ -152,7 +152,7 @@ export async function POST(req: Request) {
     } catch {}
 
     for (const item of items) {
-      let result: { remotePath: string; content: Buffer }[];
+      let result: { remotePath: string; content: ContentType}[];
       if (item.type === "blog") result = await blog(item);
       else if (item.type === "file") result = await file(item, fileMetadata);
       else if (item.type === "image") result = await image(item, imageMetadata);
@@ -161,10 +161,8 @@ export async function POST(req: Request) {
       filesToUpload.push(...result);
     }
 
-    console.log(filesToUpload);
-
-    // const res = await gh.upload(filesToUpload, "Batch upload");
-    // if (!res.ok) throw new Error("Failed to upload files to GitHub");
+    const res = await gh.upload(filesToUpload, "Batch upload");
+    if (!res.ok) throw new Error("Failed to upload files to GitHub");
 
     return NextResponse.json({ success: true });
   } catch (err) {

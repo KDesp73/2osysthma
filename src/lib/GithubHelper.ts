@@ -1,5 +1,7 @@
 import jwt from "jsonwebtoken";
 
+export type ContentType = Buffer | ArrayBuffer | Uint8Array | string;
+
 type GitHubFileCheckResponse = {
   sha: string;
   url: string;
@@ -162,15 +164,15 @@ export class GithubHelper {
   }
 
   async upload(
-    files: { remotePath: string; content: Buffer | ArrayBuffer | Uint8Array }[],
+    files: { remotePath: string; content: Buffer | ArrayBuffer | Uint8Array | string }[],
     commitMsg: string,
   ): Promise<Response> {
     const installationToken = await this.getInstallationToken();
 
-    // Get latest commit SHA and tree
+    // --- 1. Get latest commit SHA and tree ---
     const refRes = await fetch(
       `https://api.github.com/repos/${this.owner}/${this.repo}/git/ref/heads/${this.branch}`,
-      {
+        {
         headers: {
           Authorization: `Bearer ${installationToken}`,
           Accept: "application/vnd.github+json",
@@ -182,7 +184,7 @@ export class GithubHelper {
 
     const commitRes = await fetch(
       `https://api.github.com/repos/${this.owner}/${this.repo}/git/commits/${latestCommitSha}`,
-      {
+        {
         headers: {
           Authorization: `Bearer ${installationToken}`,
           Accept: "application/vnd.github+json",
@@ -192,26 +194,40 @@ export class GithubHelper {
     const commitData = await commitRes.json();
     const baseTreeSha = commitData.tree.sha;
 
-    // Prepare tree objects
+    // --- 2. Prepare tree objects ---
     const tree = files.map(({ remotePath, content }) => {
-      let buffer: Buffer;
-      if (content instanceof ArrayBuffer) buffer = Buffer.from(content);
-      else if (content instanceof Uint8Array) buffer = Buffer.from(content);
-      else buffer = content;
+      let base64Content: string;
+
+      if (Buffer.isBuffer(content)) {
+        base64Content = content.toString('base64');
+      } else if (content instanceof ArrayBuffer) {
+        base64Content = Buffer.from(content).toString('base64');
+      } else if (content instanceof Uint8Array) {
+        base64Content = Buffer.from(content).toString('base64');
+      } else if (typeof content === 'string') {
+        return {
+          path: remotePath.replace(/ /g, "-"),
+          mode: "100644",
+          type: "blob",
+          content: content,
+        };
+      } else {
+        throw new Error(`Unsupported content type for file ${remotePath}`);
+      }
 
       return {
         path: remotePath.replace(/ /g, "-"),
         mode: "100644",
         type: "blob",
-        content: buffer.toString("base64"),
+        content: base64Content,
         encoding: "base64",
       };
     });
 
-    // Create new tree
+    // --- 3. Create new tree (unchanged) ---
     const treeRes = await fetch(
       `https://api.github.com/repos/${this.owner}/${this.repo}/git/trees`,
-      {
+        {
         method: "POST",
         headers: {
           Authorization: `Bearer ${installationToken}`,
@@ -222,10 +238,10 @@ export class GithubHelper {
     );
     const treeData = await treeRes.json();
 
-    // Create commit
+    // --- 4. Create commit (unchanged) ---
     const newCommitRes = await fetch(
       `https://api.github.com/repos/${this.owner}/${this.repo}/git/commits`,
-      {
+        {
         method: "POST",
         headers: {
           Authorization: `Bearer ${installationToken}`,
@@ -240,10 +256,10 @@ export class GithubHelper {
     );
     const newCommitData = await newCommitRes.json();
 
-    // Update branch ref
+    // --- 5. Update branch ref (unchanged) ---
     return fetch(
       `https://api.github.com/repos/${this.owner}/${this.repo}/git/refs/heads/${this.branch}`,
-      {
+        {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${installationToken}`,
