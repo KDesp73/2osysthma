@@ -28,9 +28,13 @@ export default function FileUpload() {
     }
   }
 
-  function updateFile(index: number, field: "name" | "description", value: string) {
+  function updateFile(
+    index: number,
+    field: "name" | "description",
+    value: string,
+  ) {
     setFiles((prev) =>
-      prev.map((f, i) => (i === index ? { ...f, [field]: value } : f))
+      prev.map((f, i) => (i === index ? { ...f, [field]: value } : f)),
     );
   }
 
@@ -62,7 +66,7 @@ export default function FileUpload() {
           title: f.name,
           description: f.description,
           data: await fileToBase64(f.file),
-        }))
+        })),
       );
 
       const res = await fetch("/api/admin/upload", {

@@ -1,6 +1,5 @@
 .article,
-.editor
-{
+.editor {
   line-height: 1.75;
   color: #1e293b; /* slate-800 */
 
@@ -9,7 +8,11 @@
     font-weight: 700;
     margin-bottom: 2rem;
   }
-  h1::before { content: "# "; color: #94a3b8; font-weight: 400; }
+  h1::before {
+    content: "# ";
+    color: #94a3b8;
+    font-weight: 400;
+  }
 
   h2 {
     font-size: 1.875rem; /* text-3xl */
@@ -17,7 +20,11 @@
     margin-top: 2rem;
     margin-bottom: 1.5rem;
   }
-  h2::before { content: "## "; color: #94a3b8; font-weight: 400; }
+  h2::before {
+    content: "## ";
+    color: #94a3b8;
+    font-weight: 400;
+  }
 
   h3 {
     font-size: 1.5rem; /* text-2xl */
@@ -25,7 +32,11 @@
     margin-top: 1.5rem;
     margin-bottom: 1rem;
   }
-  h3::before { content: "### "; color: #94a3b8; font-weight: 400; }
+  h3::before {
+    content: "### ";
+    color: #94a3b8;
+    font-weight: 400;
+  }
 
   h4 {
     font-size: 1.25rem; /* text-xl */
@@ -33,7 +44,11 @@
     margin-top: 1.25rem;
     margin-bottom: 0.5rem;
   }
-  h4::before { content: "#### "; color: #94a3b8; font-weight: 400; }
+  h4::before {
+    content: "#### ";
+    color: #94a3b8;
+    font-weight: 400;
+  }
 
   h5 {
     font-size: 1.125rem; /* text-lg */
@@ -41,7 +56,11 @@
     margin-top: 1rem;
     margin-bottom: 0.5rem;
   }
-  h5::before { content: "##### "; color: #94a3b8; font-weight: 400; }
+  h5::before {
+    content: "##### ";
+    color: #94a3b8;
+    font-weight: 400;
+  }
 
   h6 {
     font-size: 1rem; /* text-base */
@@ -49,9 +68,15 @@
     margin-top: 0.75rem;
     margin-bottom: 0.25rem;
   }
-  h6::before { content: "###### "; color: #94a3b8; font-weight: 400; }
+  h6::before {
+    content: "###### ";
+    color: #94a3b8;
+    font-weight: 400;
+  }
 
-  p { margin-bottom: 1rem; }
+  p {
+    margin-bottom: 1rem;
+  }
 
   ul {
     list-style: disc;
@@ -84,7 +109,8 @@
     font-size: 0.875rem;
   }
 
-  del, s {
+  del,
+  s {
     text-decoration: line-through;
     color: #9ca3af; /* slate-400 */
   }

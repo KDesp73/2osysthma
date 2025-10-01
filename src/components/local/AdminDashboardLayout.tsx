@@ -1,7 +1,15 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FileText, Image, Settings, Menu, LogOut, Home, Info } from "lucide-react";
+import {
+  FileText,
+  Image,
+  Settings,
+  Menu,
+  LogOut,
+  Home,
+  Info,
+} from "lucide-react";
 import { useState } from "react";
 import { useAuthUser } from "@/hooks/useAuthUser";
 import Loading from "./Loading";
@@ -19,15 +27,37 @@ export default function AdminDashboardLayout({ children }: Props) {
   const username = user?.username;
 
   const operations = [
-    { label: "Home", icon: <Home className="h-5 w-5" />, path: "/admin/dashboard" },
-    { label: "Posts", icon: <FileText className="h-5 w-5" />, path: "/admin/dashboard/posts" },
-    { label: "Content", icon: <Image className="h-5 w-5" />, path: "/admin/dashboard/content" },
-    { label: "Useful", icon: <Info className="h-5 w-5" />, path: "/admin/dashboard/useful" },
-    { label: "Settings", icon: <Settings className="h-5 w-5" />, path: "/admin/dashboard/settings" },
+    {
+      label: "Home",
+      icon: <Home className="h-5 w-5" />,
+      path: "/admin/dashboard",
+    },
+    {
+      label: "Posts",
+      icon: <FileText className="h-5 w-5" />,
+      path: "/admin/dashboard/posts",
+    },
+    {
+      label: "Content",
+      icon: <Image className="h-5 w-5" />,
+      path: "/admin/dashboard/content",
+    },
+    {
+      label: "Useful",
+      icon: <Info className="h-5 w-5" />,
+      path: "/admin/dashboard/useful",
+    },
+    {
+      label: "Settings",
+      icon: <Settings className="h-5 w-5" />,
+      path: "/admin/dashboard/settings",
+    },
   ];
 
   const filteredOperations =
-    username === "admin" ? operations : operations.filter((op) => op.label !== "Users");
+    username === "admin"
+      ? operations
+      : operations.filter((op) => op.label !== "Users");
 
   const handleLogout = async () => {
     await fetch("/api/admin/logout", { method: "POST" });
@@ -54,7 +84,9 @@ export default function AdminDashboardLayout({ children }: Props) {
           lg:translate-x-0 lg:relative
         `}
       >
-        <h2 className="text-xl font-bold mb-4 px-4 pt-6">{username || "Guest"}</h2>
+        <h2 className="text-xl font-bold mb-4 px-4 pt-6">
+          {username || "Guest"}
+        </h2>
         <nav className="flex-1 flex flex-col gap-2 px-2">
           {filteredOperations.map((op) => (
             <Link

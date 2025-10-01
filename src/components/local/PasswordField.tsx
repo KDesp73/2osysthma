@@ -61,7 +61,11 @@ export default function PasswordField({
           aria-label={visible ? "Hide password" : "Show password"}
           className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 p-0"
         >
-          {visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          {visible ? (
+            <EyeOff className="h-4 w-4" />
+          ) : (
+            <Eye className="h-4 w-4" />
+          )}
         </Button>
       </div>
 
@@ -70,14 +74,36 @@ export default function PasswordField({
           <div className="flex items-center gap-2 text-sm">
             <div className="flex-1 h-2 bg-muted rounded overflow-hidden">
               <div
-                className={`h-2 rounded transition-all duration-150`
-                + (score === 0 ? " w-0" : score === 1 ? " w-1/4" : score === 2 ? " w-1/2" : score === 3 ? " w-3/4" : " w-full")
+                className={
+                  `h-2 rounded transition-all duration-150` +
+                  (score === 0
+                    ? " w-0"
+                    : score === 1
+                      ? " w-1/4"
+                      : score === 2
+                        ? " w-1/2"
+                        : score === 3
+                          ? " w-3/4"
+                          : " w-full")
                 }
-                style={{ backgroundColor: score <= 1 ? '#f43f5e' : score === 2 ? '#f59e0b' : '#10b981' }}
+                style={{
+                  backgroundColor:
+                    score <= 1
+                      ? "#f43f5e"
+                      : score === 2
+                        ? "#f59e0b"
+                        : "#10b981",
+                }}
               />
             </div>
             <div className="w-24 text-right">
-              {score <= 1 ? 'Weak' : score === 2 ? 'Fair' : score === 3 ? 'Good' : 'Strong'}
+              {score <= 1
+                ? "Weak"
+                : score === 2
+                  ? "Fair"
+                  : score === 3
+                    ? "Good"
+                    : "Strong"}
             </div>
           </div>
         </div>
@@ -85,4 +111,3 @@ export default function PasswordField({
     </div>
   );
 }
-

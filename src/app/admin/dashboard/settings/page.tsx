@@ -6,19 +6,23 @@ import UserManager from "@/components/local/UserManager";
 import { useAuthUser } from "@/hooks/useAuthUser";
 
 export default function DashboardSettings() {
-    const { user, loading } = useAuthUser();
+  const { user, loading } = useAuthUser();
 
-    if (loading) return <Loading />;
+  if (loading) return <Loading />;
 
-    const username = user?.username;
+  const username = user?.username;
 
-    return (
+  return (
+    <>
+      {username === "admin" ? (
         <>
-            {username === "admin" ? (<>
-                <UserManager />
-            </>) : (<>
-                <ChangePasswordForm />
-            </>)}
+          <UserManager />
         </>
-    );
+      ) : (
+        <>
+          <ChangePasswordForm />
+        </>
+      )}
+    </>
+  );
 }

@@ -11,14 +11,15 @@ interface UploadItem {
   author?: string;
   tags?: string[];
   content?: string;
-  name?: string;       // filename
-  data?: string;       // base64 string
+  name?: string; // filename
+  data?: string; // base64 string
   collection?: string; // for images
 }
 
 // --- BLOG ---
 async function blog(item: UploadItem) {
-  if (!item.title || !item.content) throw new Error("Blog items must have title and content");
+  if (!item.title || !item.content)
+    throw new Error("Blog items must have title and content");
 
   const slug = createSlug(item.title);
   if (!slug) throw new Error("Cannot generate slug from title");
@@ -31,6 +32,7 @@ async function blog(item: UploadItem) {
     tags: item.tags,
     slug,
   });
+  console.log(frontmatter);
 
   return [
     {
@@ -42,7 +44,8 @@ async function blog(item: UploadItem) {
 
 // --- FILE ---
 async function file(item: UploadItem, existingMetadata: FileMetadata[] = []) {
-  if (!item.name || !item.data) throw new Error("File items must have name and data");
+  if (!item.name || !item.data)
+    throw new Error("File items must have name and data");
 
   const metadataPath = "public/content/files/metadata.json";
   const metadata: FileMetadata[] = [...existingMetadata];
@@ -70,8 +73,12 @@ async function file(item: UploadItem, existingMetadata: FileMetadata[] = []) {
 }
 
 // --- IMAGE ---
-async function image(item: UploadItem, existingMetadata: CollectionMetadata[] = []) {
-  if (!item.name || !item.data) throw new Error("Image items must have name and data");
+async function image(
+  item: UploadItem,
+  existingMetadata: CollectionMetadata[] = [],
+) {
+  if (!item.name || !item.data)
+    throw new Error("Image items must have name and data");
   if (!item.collection) throw new Error("Image items must have a collection");
 
   const metadataPath = "public/content/images/metadata.json";
@@ -79,12 +86,19 @@ async function image(item: UploadItem, existingMetadata: CollectionMetadata[] = 
 
   let collection = metadata.find((c) => c.name === item.collection);
   if (!collection) {
-    collection = { name: item.collection, date: new Date().toISOString().split("T")[0], images: [] };
+    collection = {
+      name: item.collection,
+      date: new Date().toISOString().split("T")[0],
+      images: [],
+    };
     metadata.push(collection);
   }
 
   const nextIndex = collection.images.length;
-  collection.images.push({ path: `/${item.collection}/${item.name}`, index: nextIndex });
+  collection.images.push({
+    path: `/${item.collection}/${item.name}`,
+    index: nextIndex,
+  });
 
   return [
     {
@@ -105,25 +119,36 @@ export async function POST(req: Request) {
     const items: UploadItem[] = body.items;
 
     if (!items || !Array.isArray(items) || items.length === 0) {
-      return NextResponse.json({ success: false, error: "No items provided" }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: "No items provided" },
+        { status: 400 },
+      );
     }
 
-    const gh = new GithubHelper("KDesp73", "2osysthma", "dev");
+    const gh = new GithubHelper("KDesp73", "2osysthma");
 
-    const filesToUpload: { remotePath: string; content: Buffer | ArrayBuffer | Uint8Array }[] = [];
+    const filesToUpload: {
+      remotePath: string;
+      content: Buffer | ArrayBuffer | Uint8Array;
+    }[] = [];
 
     // Load existing metadata once
     let fileMetadata: FileMetadata[] = [];
     let imageMetadata: CollectionMetadata[] = [];
 
     try {
-      const fileMetaRes = await gh.getFile("public/content/files/metadata.json");
+      const fileMetaRes = await gh.getFile(
+        "public/content/files/metadata.json",
+      );
       if (fileMetaRes?.content) fileMetadata = JSON.parse(fileMetaRes.content);
     } catch {}
 
     try {
-      const imageMetaRes = await gh.getFile("public/content/images/metadata.json");
-      if (imageMetaRes?.content) imageMetadata = JSON.parse(imageMetaRes.content);
+      const imageMetaRes = await gh.getFile(
+        "public/content/images/metadata.json",
+      );
+      if (imageMetaRes?.content)
+        imageMetadata = JSON.parse(imageMetaRes.content);
     } catch {}
 
     for (const item of items) {
@@ -136,8 +161,10 @@ export async function POST(req: Request) {
       filesToUpload.push(...result);
     }
 
-    const res = await gh.upload(filesToUpload, "Batch upload");
-    if (!res.ok) throw new Error("Failed to upload files to GitHub");
+    console.log(filesToUpload);
+
+    // const res = await gh.upload(filesToUpload, "Batch upload");
+    // if (!res.ok) throw new Error("Failed to upload files to GitHub");
 
     return NextResponse.json({ success: true });
   } catch (err) {

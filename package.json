@@ -7,9 +7,12 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "postbuild": "next-sitemap"
+    "postbuild": "next-sitemap",
+    "format": "prettier --write '**/*.{js,ts,tsx,json,css,md}'",
+    "format:check": "prettier --check '**/*.{js,ts,tsx,json,css,md}'"
   },
   "dependencies": {
+    "@hello-pangea/dnd": "^18.0.1",
     "@libsql/client": "^0.15.14",
     "@mdxeditor/editor": "^3.42.0",
     "@next/mdx": "^15.4.6",
@@ -18,6 +21,7 @@
     "@radix-ui/react-navigation-menu": "^1.2.14",
     "@radix-ui/react-select": "^2.2.6",
     "@radix-ui/react-slot": "^1.2.3",
+    "@radix-ui/react-tabs": "^1.1.13",
     "@react-google-maps/api": "^2.20.7",
     "@tailwindcss/typography": "^0.5.16",
     "@tursodatabase/database": "^0.1.4",
@@ -32,6 +36,7 @@
     "next-sitemap": "^4.2.3",
     "node-fetch": "^3.3.2",
     "nodemailer": "^7.0.5",
+    "prettier": "^3.6.2",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "remark": "^15.0.1",

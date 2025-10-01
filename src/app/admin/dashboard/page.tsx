@@ -4,14 +4,25 @@ import { useRouter } from "next/navigation";
 import { FileText, Image, Settings, Github } from "lucide-react";
 import GitHistory from "@/components/local/GitHistory";
 
-
 export default function AdminDashboard() {
   const router = useRouter();
 
   const operations = [
-    { label: "Posts", icon: <FileText className="h-8 w-8 mb-2" />, path: "/admin/dashboard/posts" },
-    { label: "Content", icon: <Image className="h-8 w-8 mb-2" />, path: "/admin/dashboard/content" },
-    { label: "Settings", icon: <Settings className="h-8 w-8 mb-2" />, path: "/admin/dashboard/settings" },
+    {
+      label: "Posts",
+      icon: <FileText className="h-8 w-8 mb-2" />,
+      path: "/admin/dashboard/posts",
+    },
+    {
+      label: "Content",
+      icon: <Image className="h-8 w-8 mb-2" />,
+      path: "/admin/dashboard/content",
+    },
+    {
+      label: "Settings",
+      icon: <Settings className="h-8 w-8 mb-2" />,
+      path: "/admin/dashboard/settings",
+    },
   ];
 
   return (

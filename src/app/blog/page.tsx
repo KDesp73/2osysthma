@@ -1,22 +1,32 @@
-import Link from "next/link"
-import { getAllPosts } from "@/lib/posts"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Calendar, User } from "lucide-react"
-import Title from "@/components/local/Title"
-import { Badge } from "@/components/ui/badge"
+import Link from "next/link";
+import { getAllPosts } from "@/lib/posts";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Calendar, User } from "lucide-react";
+import Title from "@/components/local/Title";
+import { Badge } from "@/components/ui/badge";
 
-export default async function BlogPage({ searchParams }: { searchParams: Promise<{ tag?: string }> }) {
-  const posts = getAllPosts()
+export default async function BlogPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tag?: string }>;
+}) {
+  const posts = getAllPosts();
   const { tag } = await searchParams;
 
   // Filter posts by tag if query param exists
   const filteredPosts = tag
     ? posts.filter((post) => post.tags.includes(tag as string))
-    : posts
+    : posts;
 
   // Collect all unique tags
-  const allTags = Array.from(new Set(posts.flatMap((post) => post.tags)))
+  const allTags = Array.from(new Set(posts.flatMap((post) => post.tags)));
 
   return (
     <>
@@ -25,15 +35,11 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
       {/* Tag Filter Bar */}
       <div className="flex flex-wrap gap-2 mb-6">
         <Link href="/blog">
-          <Badge variant={tag ? "outline" : "default"}>
-            All
-          </Badge>
+          <Badge variant={tag ? "outline" : "default"}>All</Badge>
         </Link>
         {allTags.map((t) => (
           <Link key={t} href={`/blog?tag=${t}`}>
-            <Badge variant={tag === t ? "default" : "outline"}>
-              {t}
-            </Badge>
+            <Badge variant={tag === t ? "default" : "outline"}>{t}</Badge>
           </Link>
         ))}
       </div>
@@ -47,9 +53,7 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
                 <h1 className="text-2xl font-semibold">{post.title}</h1>
                 <div className="flex items-center text-sm text-gray-500 gap-2">
                   <Calendar className="h-4 w-4" />
-                  <time dateTime={post.date}>
-                  {post.date.split("T")[0]}
-                  </time>
+                  <time dateTime={post.date}>{post.date.split("T")[0]}</time>
                   {post.author && (
                     <>
                       <User className="h-4 w-4" />
@@ -78,5 +82,5 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
         ))}
       </div>
     </>
-  )
+  );
 }
