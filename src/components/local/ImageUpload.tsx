@@ -436,7 +436,7 @@ export default function ImageManager() {
                                   src={
                                     img.preview.startsWith("http")
                                       ? img.preview
-                                      : `/content/images/${img.collection}/${img.name}`
+                                      : `/content/images/${img.collection.replace(/\s+/g, "-")}/${img.name}`
                                   }
                                   alt={img.name}
                                   className="object-cover w-full h-32"
