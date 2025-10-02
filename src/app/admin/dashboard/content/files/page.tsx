@@ -1,6 +1,6 @@
 "use client";
 
-import FileUpload from "@/components/local/FileUpload";
+import FileUpload from "@/components/local/cms/FileUpload";
 
 export default function Files() {
   return (

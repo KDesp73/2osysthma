@@ -53,7 +53,7 @@ export default function ImageManage({
     return (
         <Card>
             <CardHeader>
-                <CardTitle className="text-2xl font-bold">Manage Images (Deletion Only)</CardTitle>
+                <CardTitle className="text-2xl font-bold">Manage Images</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
                 
