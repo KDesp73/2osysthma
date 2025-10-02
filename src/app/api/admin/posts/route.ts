@@ -10,9 +10,8 @@ export async function DELETE(req: NextRequest) {
 
     const gh = await GithubHelper.create();
 
-    let res;
     try {
-      res = await gh.remove(
+      await gh.remove(
         [`public/content/blog/${slug}.md`],
         `Removed blog post: ${title}`,
       );
@@ -21,9 +20,7 @@ export async function DELETE(req: NextRequest) {
       throw new Error(err instanceof Error ? err.message : JSON.stringify(err));
     }
 
-    if (res.status != 200) throw new Error("Failed removing blog post");
-
-    return NextResponse.json({ success: true, ...res });
+    return NextResponse.json({ success: true });
   } catch (err) {
     console.error(err);
     return NextResponse.json(

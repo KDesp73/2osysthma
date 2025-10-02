@@ -248,7 +248,7 @@ export class GithubHelper {
       repo: this.repo,
       message: commitMessage,
       tree: newTree.sha,
-      parents: [latestCommit.sha],
+      parents: [latestCommit.data.sha],
     });
 
     await this.octokit.git.updateRef({

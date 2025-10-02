@@ -31,12 +31,8 @@ export async function DELETE(req: NextRequest) {
     // 2. Initialize the GitHub Helper
     const gh = await GithubHelper.create();
 
-    let res;
     try {
-      // 3. Call gh.remove with the array of paths and the provided commit message.
-      // The client (frontend) is responsible for compiling the list of paths,
-      // which might include multiple images or posts.
-      res = await gh.remove(paths, commitMessage);
+      await gh.remove(paths, commitMessage);
     } catch (err: unknown) {
       console.error(
         "GitHub removal operation failed:",
@@ -46,12 +42,7 @@ export async function DELETE(req: NextRequest) {
       throw new Error(err instanceof Error ? err.message : JSON.stringify(err));
     }
 
-    // 4. Check for successful status (2xx status codes)
-    if (res.status < 200 || res.status >= 300) {
-      throw new Error(`GitHub operation failed with status ${res.status}`);
-    }
-
-    return NextResponse.json({ success: true, ...res });
+    return NextResponse.json({ success: true });
   } catch (err) {
     console.error("Deletion endpoint error:", err);
     return NextResponse.json(

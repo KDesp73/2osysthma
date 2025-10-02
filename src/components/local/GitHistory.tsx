@@ -63,7 +63,7 @@ export default function GitHistory() {
               className="border rounded p-3 hover:bg-gray-50 transition"
             >
               <a
-                href={c.url}
+                href={c.html_url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="font-medium text-blue-600 hover:underline"
