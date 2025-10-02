@@ -21,13 +21,6 @@ export default function FileManager() {
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // --- Upload Tab State (Simplified since FileUpload is a black box) ---
-  // Retaining minimal state fields based on the original template for potential FileUpload compatibility
-  const [uploading, setUploading] = useState(false);
-  const [uploadFiles, setUploadFiles] = useState<any[]>([]);
-  const [collection, setCollection] = useState<string>("");
-  const [newCollection, setNewCollection] = useState<string>("");
-
   // 1. Load existing files metadata
   useEffect(() => {
     (async () => {
@@ -92,13 +85,6 @@ export default function FileManager() {
     } finally {
       setIsSaving(false);
     }
-  };
-
-  // Placeholder function for FileUpload (assuming it manages its own state and API)
-  const handleUpload = () => {
-    console.log(
-      "Upload initiated. Please ensure the FileUpload component handles the API call and triggers a page refresh upon success.",
-    );
   };
 
   if (isLoading) {
