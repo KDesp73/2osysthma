@@ -22,5 +22,23 @@
         "path": "/content/images/Ομάδα/Blue-and-Green-Illustrative-Tree-Planting-Action-Poster.jpg"
       }
     ]
+  },
+  {
+    "name": "test",
+    "date": "2025-10-02",
+    "images": [
+      {
+        "path": "/content/images/test/OIP-1970199385.jpg",
+        "index": 0
+      },
+      {
+        "path": "/content/images/test/OIP-3783054283.jpg",
+        "index": 1
+      },
+      {
+        "path": "/content/images/test/OIP-3933394303.jpg",
+        "index": 2
+      }
+    ]
   }
 ]
