@@ -2,7 +2,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ImageUploadPreview } from "./ImageManager";
 
 interface ImageUploadProps {
@@ -40,7 +46,10 @@ export default function ImageUpload({
             <Label htmlFor="collection">Choose collection</Label>
             <Select
               value={collection}
-              onValueChange={(val) => { setCollection(val); setNewCollection(''); }} // Clear new collection when selecting existing
+              onValueChange={(val) => {
+                setCollection(val);
+                setNewCollection("");
+              }} // Clear new collection when selecting existing
             >
               <SelectTrigger id="collection">
                 <SelectValue placeholder="-- Select existing collection --" />
@@ -61,7 +70,10 @@ export default function ImageUpload({
               type="text"
               placeholder="New collection name"
               value={newCollection}
-              onChange={(e) => { setNewCollection(e.target.value); setCollection(''); }} // Clear existing collection when starting new
+              onChange={(e) => {
+                setNewCollection(e.target.value);
+                setCollection("");
+              }} // Clear existing collection when starting new
             />
           </div>
         </div>
@@ -94,11 +106,7 @@ export default function ImageUpload({
           </div>
         )}
 
-        <Button
-          onClick={handleUpload}
-          disabled={uploading}
-          className="w-full"
-        >
+        <Button onClick={handleUpload} disabled={uploading} className="w-full">
           {uploading ? "Uploading..." : "Upload Images"}
         </Button>
       </CardContent>

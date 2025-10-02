@@ -107,7 +107,11 @@ export class GithubHelper {
    * @returns The response from updating the ref.
    */
   async upload(
-    files: { remotePath: string; content: string; encoding: "utf-8" | "base64" }[],
+    files: {
+      remotePath: string;
+      content: string;
+      encoding: "utf-8" | "base64";
+    }[],
     commitMsg: string,
   ) {
     // 1. Get the latest commit SHA of the branch
@@ -129,9 +133,8 @@ export class GithubHelper {
     const treeItems = await Promise.all(
       // Destructure 'encoding' from the file object
       files.map(async ({ remotePath, content, encoding }) => {
-
         // Use the explicitly provided content string and encoding.
-        // The Base64 image data is now correctly identified as 'base64' 
+        // The Base64 image data is now correctly identified as 'base64'
         // and the metadata JSON as 'utf-8'.
         const blob = await this.octokit.git.createBlob({
           owner: this.owner,
@@ -142,8 +145,8 @@ export class GithubHelper {
 
         return {
           path: remotePath,
-          mode: "100644" as const, 
-          type: "blob" as const, 
+          mode: "100644" as const,
+          type: "blob" as const,
           sha: blob.data.sha,
         };
       }),
