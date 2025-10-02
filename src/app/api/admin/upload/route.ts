@@ -55,7 +55,7 @@ async function file(item: UploadItem, existingMetadata: FileMetadata[] = []) {
   const metadata: FileMetadata[] = [...existingMetadata];
 
   const entry: FileMetadata = {
-    filename: item.name.replace(/ /g, "-"),
+    filename: item.name,
     title: item.title || item.name,
     description: item.description || "",
   };
