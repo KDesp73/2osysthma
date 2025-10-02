@@ -1,16 +1,9 @@
+import { CommitHistoryItem } from "@/lib/GithubHelper";
 import { Github } from "lucide-react";
 import { useEffect, useState } from "react";
 
-interface Commit {
-  sha: string;
-  message: string;
-  author: string;
-  date: string;
-  url: string;
-}
-
 export default function GitHistory() {
-  const [history, setHistory] = useState<Commit[]>([]);
+  const [history, setHistory] = useState<CommitHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [count, setCount] = useState(10);
 
@@ -23,7 +16,7 @@ export default function GitHistory() {
       });
 
       const res = await fetch(`/api/admin/git-history?${params.toString()}`);
-      const commits = await res.json();
+      const commits = (await res.json()) as CommitHistoryItem[];
       setHistory(commits);
     } catch (err) {
       console.error("Failed to fetch git history", err);
@@ -78,7 +71,7 @@ export default function GitHistory() {
                 {c.message}
               </a>
               <p className="text-sm text-gray-500">
-                {c.author} • {new Date(c.date).toLocaleString()}
+                {c.author.name} • {new Date(c.committer.date!).toLocaleString()}
               </p>
               <p className="text-xs text-gray-400 truncate">{c.sha}</p>
             </li>

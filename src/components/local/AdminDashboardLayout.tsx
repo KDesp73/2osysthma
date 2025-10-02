@@ -3,18 +3,15 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Image,
-  Settings,
-  Menu,
-  LogOut,
-  Home,
-  Info,
-  X,
-} from "lucide-react";
+import { Image, Settings, Menu, LogOut, Home, Info, X } from "lucide-react";
 import { useAuthUser } from "@/hooks/useAuthUser";
 import Loading from "./Loading";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 
 interface Props {
@@ -30,7 +27,11 @@ export default function AdminDashboardLayout({ children }: Props) {
   const username = user?.username;
 
   const operations = [
-    { label: "Home", icon: <Home className="h-5 w-5" />, path: "/admin/dashboard" },
+    {
+      label: "Home",
+      icon: <Home className="h-5 w-5" />,
+      path: "/admin/dashboard",
+    },
     {
       label: "Content",
       icon: <Image className="h-5 w-5" />,
@@ -41,13 +42,22 @@ export default function AdminDashboardLayout({ children }: Props) {
         { label: "Files", path: "/admin/dashboard/content/files" },
       ],
     },
-    { label: "Useful", icon: <Info className="h-5 w-5" />, path: "/admin/dashboard/useful" },
-    { label: "Settings", icon: <Settings className="h-5 w-5" />, path: "/admin/dashboard/settings" },
+    {
+      label: "Useful",
+      icon: <Info className="h-5 w-5" />,
+      path: "/admin/dashboard/useful",
+    },
+    {
+      label: "Settings",
+      icon: <Settings className="h-5 w-5" />,
+      path: "/admin/dashboard/settings",
+    },
   ];
 
-  const filteredOperations = username === "admin"
-    ? operations
-    : operations.filter((op) => op.label !== "Users");
+  const filteredOperations =
+    username === "admin"
+      ? operations
+      : operations.filter((op) => op.label !== "Users");
 
   const handleLogout = async () => {
     await fetch("/api/admin/logout", { method: "POST" });
@@ -56,7 +66,6 @@ export default function AdminDashboardLayout({ children }: Props) {
 
   return (
     <div className="flex h-screen bg-gray-50">
-
       {/* Mobile Overlay */}
       {sidebarOpen && (
         <div
@@ -74,14 +83,14 @@ export default function AdminDashboardLayout({ children }: Props) {
         `}
       >
         <div className="flex justify-between items-center px-4 pt-6 pb-4">
-            <h2 className="text-xl font-bold">{username || "Guest"}</h2>
-            <Button
-                variant="ghost"
-                onClick={() => setSidebarOpen(false)}
-                className="p-2 lg:hidden" // Hide close button on desktop
-            >
-                <X className="h-6 w-6" />
-            </Button>
+          <h2 className="text-xl font-bold">{username || "Guest"}</h2>
+          <Button
+            variant="ghost"
+            onClick={() => setSidebarOpen(false)}
+            className="p-2 lg:hidden" // Hide close button on desktop
+          >
+            <X className="h-6 w-6" />
+          </Button>
         </div>
 
         <nav className="flex-1 flex flex-col gap-2 px-2 overflow-y-auto">
@@ -149,14 +158,14 @@ export default function AdminDashboardLayout({ children }: Props) {
       <div className="flex flex-col flex-1 min-w-0">
         {/* Mobile/Desktop Header */}
         <header className="sticky top-0 z-10 p-4 bg-white border-b lg:hidden flex justify-between items-center shadow-sm">
-            <h1 className="text-lg font-semibold">Dashboard</h1>
-            <Button
-                variant="secondary"
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="p-2"
-            >
-                <Menu className="h-6 w-6" />
-            </Button>
+          <h1 className="text-lg font-semibold">Dashboard</h1>
+          <Button
+            variant="secondary"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="p-2"
+          >
+            <Menu className="h-6 w-6" />
+          </Button>
         </header>
 
         {/* Main content */}

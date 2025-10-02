@@ -3,7 +3,6 @@
 import GitHistory from "@/components/local/GitHistory";
 
 export default function AdminDashboard() {
-
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-12">
       <header className="mb-6 text-center">

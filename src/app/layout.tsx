@@ -3,11 +3,11 @@ import "./globals.css";
 import Layout from "@/components/local/Layout";
 import { Analytics } from "@vercel/analytics/next";
 import Seo from "@/components/local/Seo";
-import { Noto_Serif } from 'next/font/google';
+import { Noto_Serif } from "next/font/google";
 
 const font = Noto_Serif({
-  subsets: ['latin'],
-  variable: '--font-sans',
+  subsets: ["latin"],
+  variable: "--font-sans",
 });
 
 export const metadata: Metadata = {

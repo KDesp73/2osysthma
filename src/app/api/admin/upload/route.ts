@@ -2,7 +2,11 @@ import { NextResponse } from "next/server";
 import matter from "gray-matter";
 import { ContentType, GithubHelper } from "@/lib/GithubHelper";
 import { createSlug } from "@/lib/posts";
-import { CollectionMetadata, FileMetadata, ImageMetadata } from "@/lib/metadata";
+import {
+  CollectionMetadata,
+  FileMetadata,
+  ImageMetadata,
+} from "@/lib/metadata";
 
 interface UploadItem {
   type: "blog" | "file" | "image";
@@ -38,6 +42,7 @@ async function blog(item: UploadItem) {
     file: {
       remotePath: `public/content/blog/${slug}.md`,
       content: frontmatter,
+      encoding: "utf-8",
     },
   } as ReturnType;
 }
@@ -61,11 +66,12 @@ async function file(item: UploadItem, existingMetadata: FileMetadata[] = []) {
 
   return {
     commitMsg: `Uploaded file '${item.name}'`,
-    file:{
+    file: {
       remotePath: `public/content/files/${item.name}`,
-      content: Buffer.from(item.data, "base64"),
+      content: item.data,
+      encoding: "base64",
     },
-    metadata
+    metadata,
   } as ReturnType;
 }
 
@@ -100,15 +106,17 @@ async function image(
     commitMsg: `Uploaded image '${item.name}'`,
     file: {
       remotePath: `public/content/images/${item.collection}/${item.name}`,
-      content: Buffer.from(item.data, "base64"),
+      content: item.data,
+      encoding: "base64",
     },
-    metadata: metadata
+    metadata: metadata,
   } as ReturnType;
 }
 
 interface FileType {
   remotePath: string;
   content: ContentType;
+  encoding: "utf-8" | "base64";
 }
 
 interface ReturnType {
@@ -130,7 +138,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const gh = new GithubHelper();
+    const gh = await GithubHelper.create();
 
     const filesToUpload: FileType[] = [];
 
@@ -139,13 +147,18 @@ export async function POST(req: Request) {
     let imageMetadata: CollectionMetadata[] = [];
 
     try {
-      const fileMetaRes = await gh.getFile("public/content/files/metadata.json");
+      const fileMetaRes = await gh.getFile(
+        "public/content/files/metadata.json",
+      );
       if (fileMetaRes?.content) fileMetadata = JSON.parse(fileMetaRes.content);
     } catch {}
 
     try {
-      const imageMetaRes = await gh.getFile("public/content/images/metadata.json");
-      if (imageMetaRes?.content) imageMetadata = JSON.parse(imageMetaRes.content);
+      const imageMetaRes = await gh.getFile(
+        "public/content/images/metadata.json",
+      );
+      if (imageMetaRes?.content)
+        imageMetadata = JSON.parse(imageMetaRes.content);
     } catch {}
 
     let lastCommitMsg = "Upload";
@@ -178,12 +191,14 @@ export async function POST(req: Request) {
       filesToUpload.push({
         remotePath: "public/content/files/metadata.json",
         content: JSON.stringify(fileMetadata, null, 2),
+        encoding: "utf-8",
       });
     }
     if (touchedImages) {
       filesToUpload.push({
         remotePath: "public/content/images/metadata.json",
         content: JSON.stringify(imageMetadata, null, 2),
+        encoding: "utf-8",
       });
     }
 
@@ -192,7 +207,7 @@ export async function POST(req: Request) {
       filesToUpload.length <= 2 ? lastCommitMsg : "Batch upload";
 
     const res = await gh.upload(filesToUpload, commitMsg);
-    if (!res.ok) throw new Error("Failed to upload files to GitHub");
+    if (res.status != 200) throw new Error("Failed to upload files to GitHub");
 
     return NextResponse.json({ success: true });
   } catch (err) {

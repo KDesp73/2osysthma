@@ -8,7 +8,7 @@ export async function DELETE(req: NextRequest) {
     const { title } = body;
     const slug = createSlug(title);
 
-    const gh = new GithubHelper();
+    const gh = await GithubHelper.create();
 
     let res;
     try {
@@ -21,7 +21,7 @@ export async function DELETE(req: NextRequest) {
       throw new Error(err instanceof Error ? err.message : JSON.stringify(err));
     }
 
-    if (!res.ok) throw new Error("Failed removing blog post");
+    if (res.status != 200) throw new Error("Failed removing blog post");
 
     return NextResponse.json({ success: true, ...res });
   } catch (err) {

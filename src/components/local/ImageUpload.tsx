@@ -20,6 +20,7 @@ import {
   DropResult,
 } from "@hello-pangea/dnd";
 
+// Interfaces
 interface MetadataImage {
   path: string;
   index: number;
@@ -32,16 +33,27 @@ interface MetadataFolder {
 }
 
 interface ImageUploadPreview {
+  id: string; // FIX: Stable unique ID for dnd (set to path on load)
   file?: File;
   preview: string;
   name: string;
   collection: string;
   isNew?: boolean;
+  // Fields to track original state for diffing
+  originalPath: string;
+  originalCollection: string;
+  isDeleted?: boolean; // Track deletions locally
 }
 
 export default function ImageManager() {
   const [collections, setCollections] = useState<string[]>([]);
+  // Store the current state (modified)
   const [images, setImages] = useState<ImageUploadPreview[]>([]);
+  // Store the original state (for calculating diffs/moves)
+  const [originalImages, setOriginalImages] = useState<ImageUploadPreview[]>(
+    [],
+  );
+  const [isSaving, setIsSaving] = useState(false);
 
   // Upload tab state
   const [uploading, setUploading] = useState(false);
@@ -52,32 +64,48 @@ export default function ImageManager() {
   // Load collections + existing images
   useEffect(() => {
     (async () => {
-      const metaRes = await fetch("/content/images/metadata.json");
-      const data: MetadataFolder[] = await metaRes.json();
-      setCollections(data.map((f) => f.name));
+      try {
+        const metaRes = await fetch("/content/images/metadata.json");
+        const data: MetadataFolder[] = await metaRes.json();
 
-      const existing: ImageUploadPreview[] = data.flatMap((folder) =>
-        folder.images.map((img) => ({
-          preview: img.path,
-          name: img.path.split("/").pop() || "",
-          collection: folder.name,
-        })),
-      );
+        setCollections(data.map((f) => f.name));
 
-      setImages(existing);
+        const existing: ImageUploadPreview[] = data.flatMap((folder) =>
+          folder.images.map((img) => {
+            const fileName = img.path.split("/").pop() || "";
+            return {
+              id: img.path, // Use path as stable ID
+              preview: img.path,
+              name: fileName,
+              collection: folder.name,
+              originalPath: img.path,
+              originalCollection: folder.name,
+            };
+          }),
+        );
+
+        // IMPORTANT: Set both states
+        setImages(existing);
+        setOriginalImages(existing);
+      } catch (e) {
+        console.error("Failed to load metadata:", e);
+      }
     })();
   }, []);
 
-  // ============= Upload Handlers =============
+  // ============= Upload Handlers  =============
   const handleFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
 
     const filesArray = Array.from(e.target.files).map((file) => ({
+      id: file.name + Date.now(), // Generate temporary stable ID
       file,
       preview: URL.createObjectURL(file),
       name: file.name,
       collection: collection || newCollection,
       isNew: true,
+      originalPath: "", // New files don't have an original path
+      originalCollection: "",
     }));
 
     setUploadImages((prev) => [...prev, ...filesArray]);
@@ -97,15 +125,17 @@ export default function ImageManager() {
     try {
       const filesData = await Promise.all(
         uploadImages.map(async (img) => {
+          // Base64 encoding logic is correct for sending to API
           const arrayBuffer = await img.file!.arrayBuffer();
           const uint8 = new Uint8Array(arrayBuffer);
-          let binary = "";
-          uint8.forEach((b) => (binary += String.fromCharCode(b)));
+          const binary = Array.from(uint8, (b) => String.fromCharCode(b)).join(
+            "",
+          );
           const base64 = btoa(binary);
 
           return {
             type: "image",
-            name: img.file!.name,
+            name: img.file!.name.replace(/\s+/g, "_"), // Sanitize filename
             collection: finalCollection,
             data: base64,
           };
@@ -121,14 +151,20 @@ export default function ImageManager() {
       if (!res.ok) throw new Error((await res.json()).error);
 
       alert("Upload successful!");
+
+      // Clear and refresh states
       setUploadImages([]);
+      if (newCollection && !collections.includes(newCollection)) {
+        setCollections((prev) => [...prev, newCollection]);
+      }
       setNewCollection("");
       setCollection("");
 
-      // refresh images list
-      setImages((prev) => [...prev, ...uploadImages]);
+      // Simple page reload is best here to fully resync images/metadata
+      // For a complex app, you'd integrate the new uploads into the `images` state
+      window.location.reload();
     } catch (err) {
-      alert("Upload failed: " + err);
+      alert("Upload failed: " + (err as Error).message);
     } finally {
       setUploading(false);
     }
@@ -143,50 +179,139 @@ export default function ImageManager() {
     setImages(reordered);
   };
 
-  const handleDelete = (idx: number) => {
-    setImages((prev) => prev.filter((_, i) => i !== idx));
+  const handleDelete = (id: string) => {
+    // Mark as deleted, but keep in state until saved to calculate diff
+    setImages((prev) =>
+      prev.map((img) => (img.id === id ? { ...img, isDeleted: true } : img)),
+    );
   };
 
-  const handleRename = (idx: number, newName: string) => {
+  const handleRename = (id: string, newName: string) => {
     setImages((prev) =>
-      prev.map((img, i) =>
-        i === idx ? { ...img, name: newName.replace(/\s+/g, "_") } : img,
+      prev.map((img) =>
+        img.id === id ? { ...img, name: newName.replace(/\s+/g, "_") } : img,
       ),
     );
   };
 
-  const handleSaveChanges = async () => {
-    try {
-      const edits = images.map((img) => ({
-        type: "move",
-        from: img.preview.replace("/content/images", ""),
-        to: `${img.collection}/${img.name}`,
-      }));
+  const handleCollectionChange = (id: string, val: string) => {
+    setImages((prev) =>
+      prev.map((img) => (img.id === id ? { ...img, collection: val } : img)),
+    );
+  };
 
-      const res = await fetch("/api/admin/upload", {
+  const handleSaveChanges = async () => {
+    setIsSaving(true);
+
+    // 1. Filter out permanently deleted images (i.e., new files that were staged then deleted)
+    const currentActiveImages = images.filter(
+      (img) => !img.isDeleted && !img.isNew,
+    );
+
+    // 2. Identify all required actions (Delete, Rename/Move/Reorder)
+    const actions: Array<{
+      type: string;
+      path?: string;
+      oldPath?: string;
+      newPath?: string;
+    }> = [];
+    const currentImagePaths = new Set(
+      currentActiveImages.map((img) => img.originalPath),
+    );
+
+    // A. Deletions: Images present in original state but not in current active state
+    originalImages.forEach((original) => {
+      const isStillPresent = images.some(
+        (img) => img.id === original.id && !img.isDeleted,
+      );
+      if (!isStillPresent) {
+        actions.push({
+          type: "delete",
+          path: original.originalPath.replace(
+            "/content/images/",
+            "public/content/images/",
+          ),
+        });
+      }
+    });
+
+    // B. Moves/Renames: Images still present but with changed path or collection
+    currentActiveImages.forEach((current, index) => {
+      const original = originalImages.find((img) => img.id === current.id);
+
+      // This should only run for existing images, not new uploads
+      if (!original) return;
+
+      const newRemotePath = `public/content/images/${current.collection}/${current.name}`;
+      const oldRemotePath = original.originalPath.replace(
+        "/content/images/",
+        "public/content/images/",
+      );
+
+      // Check for path change (rename or move collection)
+      if (oldRemotePath !== newRemotePath) {
+        actions.push({
+          type: "move",
+          oldPath: oldRemotePath,
+          newPath: newRemotePath,
+        });
+      }
+
+      // Reordering is implicit and handled by rebuilding the metadata.json based on the final order
+    });
+
+    // C. Reorder/Metadata Update: Always send the final list to rebuild metadata.json
+    const newMetadata = currentActiveImages.map((img) => ({
+      // Use the final path, whether original or new/moved
+      path: img.preview.startsWith("http")
+        ? img.preview.replace("/content/images", "")
+        : `/content/images/${img.collection}/${img.name}`,
+      collection: img.collection,
+    }));
+
+    if (
+      actions.length === 0 &&
+      newMetadata.every(
+        (item, i) => item.path === originalImages[i]?.originalPath,
+      )
+    ) {
+      alert("No changes detected.");
+      setIsSaving(false);
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/admin/edit-images", {
+        // NEW dedicated endpoint
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items: edits }),
+        body: JSON.stringify({ actions, newMetadata }),
       });
 
       if (!res.ok) throw new Error((await res.json()).error);
 
-      alert("Changes saved!");
+      alert("Changes saved! Refreshing...");
+      window.location.reload(); // Full refresh to sync state
     } catch (err) {
-      alert("Save failed: " + err);
+      alert("Save failed: " + (err as Error).message);
+    } finally {
+      setIsSaving(false);
     }
   };
 
   // ============= Render =============
+  const activeImages = images.filter((img) => !img.isDeleted);
+
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
       <Tabs defaultValue="upload">
         <TabsList>
           <TabsTrigger value="upload">Upload</TabsTrigger>
-          <TabsTrigger value="manage">Manage</TabsTrigger>
+          <TabsTrigger value="manage">
+            Manage ({activeImages.length})
+          </TabsTrigger>
         </TabsList>
 
-        {/* Upload Tab */}
         <TabsContent value="upload">
           <Card>
             <CardHeader>
@@ -194,10 +319,12 @@ export default function ImageManager() {
                 Upload Images
               </CardTitle>
             </CardHeader>
+
             <CardContent className="space-y-6">
               <div className="space-y-4">
                 <div>
                   <Label htmlFor="collection">Choose collection</Label>
+
                   <Select
                     value={collection}
                     onValueChange={(val) => setCollection(val)}
@@ -205,6 +332,7 @@ export default function ImageManager() {
                     <SelectTrigger id="collection">
                       <SelectValue placeholder="-- Select existing collection --" />
                     </SelectTrigger>
+
                     <SelectContent>
                       {collections.map((c) => (
                         <SelectItem key={c} value={c}>
@@ -219,6 +347,7 @@ export default function ImageManager() {
                   <Label htmlFor="new-collection">
                     Or create new collection
                   </Label>
+
                   <Input
                     id="new-collection"
                     type="text"
@@ -231,6 +360,7 @@ export default function ImageManager() {
 
               <div>
                 <Label htmlFor="file-upload">Select images</Label>
+
                 <Input
                   id="file-upload"
                   type="file"
@@ -249,6 +379,7 @@ export default function ImageManager() {
                         alt={img.name}
                         className="object-cover w-full h-32"
                       />
+
                       <p className="text-sm text-center p-2 truncate">
                         {img.name}
                       </p>
@@ -277,7 +408,7 @@ export default function ImageManager() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              {images.length > 0 ? (
+              {activeImages.length > 0 ? (
                 <DragDropContext onDragEnd={handleReorder}>
                   <Droppable droppableId="images" direction="horizontal">
                     {(provided) => (
@@ -286,8 +417,13 @@ export default function ImageManager() {
                         {...provided.droppableProps}
                         ref={provided.innerRef}
                       >
-                        {images.map((img, i) => (
-                          <Draggable key={i} draggableId={String(i)} index={i}>
+                        {activeImages.map((img, i) => (
+                          // FIX: Use stable ID for key and draggableId
+                          <Draggable
+                            key={img.id}
+                            draggableId={img.id}
+                            index={i}
+                          >
                             {(provided) => (
                               <Card
                                 ref={provided.innerRef}
@@ -296,28 +432,27 @@ export default function ImageManager() {
                                 className="overflow-hidden space-y-2 p-2"
                               >
                                 <img
-                                  src={img.preview}
+                                  // Use the static path here, preview is just the URL.
+                                  src={
+                                    img.preview.startsWith("http")
+                                      ? img.preview
+                                      : `/content/images/${img.collection}/${img.name}`
+                                  }
                                   alt={img.name}
                                   className="object-cover w-full h-32"
                                 />
                                 <Input
                                   value={img.name}
                                   onChange={(e) =>
-                                    handleRename(i, e.target.value)
+                                    handleRename(img.id, e.target.value)
                                   }
                                   className="text-sm"
                                 />
                                 <Select
                                   value={img.collection}
-                                  onValueChange={(val) => {
-                                    setImages((prev) =>
-                                      prev.map((p, idx) =>
-                                        idx === i
-                                          ? { ...p, collection: val }
-                                          : p,
-                                      ),
-                                    );
-                                  }}
+                                  onValueChange={(val) =>
+                                    handleCollectionChange(img.id, val)
+                                  }
                                 >
                                   <SelectTrigger>
                                     <SelectValue placeholder="Collection" />
@@ -333,7 +468,7 @@ export default function ImageManager() {
                                 <Button
                                   variant="destructive"
                                   size="sm"
-                                  onClick={() => handleDelete(i)}
+                                  onClick={() => handleDelete(img.id)}
                                 >
                                   Delete
                                 </Button>
@@ -352,8 +487,12 @@ export default function ImageManager() {
                 </p>
               )}
 
-              <Button onClick={handleSaveChanges} className="w-full">
-                Save Changes
+              <Button
+                onClick={handleSaveChanges}
+                className="w-full"
+                disabled={isSaving}
+              >
+                {isSaving ? "Saving..." : "Save Changes"}
               </Button>
             </CardContent>
           </Card>

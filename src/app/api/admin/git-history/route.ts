@@ -4,11 +4,13 @@ import { NextRequest, NextResponse } from "next/server";
 export async function GET(req: NextRequest) {
   try {
     const url = new URL(req.url);
-    const path = url.searchParams.get("path") || undefined;
+
+    const path = url.searchParams.get("path") || "";
     const count = parseInt(url.searchParams.get("count") || "10", 10);
 
-    const gh = new GithubHelper("KDesp73", "2osysthma");
-    const commits = await gh.getGitHistory(path, count);
+    const gh = await GithubHelper.create();
+
+    const commits = await gh.getHistory(path, count);
 
     return NextResponse.json(commits);
   } catch (err) {

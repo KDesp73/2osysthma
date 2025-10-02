@@ -20,8 +20,8 @@ const links = [
   {
     name: "Στοιχεία Περιπέτειας",
     description: "To Eγκόλπιο του Προσκόπου",
-    href: "https://scout-adventure.gr"
-  }
+    href: "https://scout-adventure.gr",
+  },
 ];
 
 export default function FilesPage() {

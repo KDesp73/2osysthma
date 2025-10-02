@@ -23,7 +23,7 @@ interface Props {
 export default function Gallery({ collections }: Props) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  const hasImages = collections.some(folder => folder.images.length > 0);
+  const hasImages = collections.some((folder) => folder.images.length > 0);
 
   if (!hasImages) {
     return (
@@ -40,29 +40,33 @@ export default function Gallery({ collections }: Props) {
   return (
     <>
       <Title name="Gallery" />
-      {collections.sort((a, b) => b.date.localeCompare(a.date)).map(({ name, date, images }) => (
-        <section key={name + date} className="mb-12">
-          <h2 className="text-2xl font-semibold mb-1">{name}</h2>
-          <p className="text-sm text-gray-500 mb-4">{date}</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {images.sort((a, b) => a.index - b.index).map((img) => (
-              <div
-                key={img.index}
-                className="overflow-hidden rounded-lg shadow-lg hover:scale-105 transition-transform cursor-pointer"
-                onClick={() => setSelectedImage(img.path)}
-              >
-                <Image
-                  src={img.path}
-                  alt={`${name} - ${img.index}`}
-                  width={500}
-                  height={500}
-                  className="object-cover w-full h-full"
-                />
-              </div>
-            ))}
-          </div>
-        </section>
-      ))}
+      {collections
+        .sort((a, b) => b.date.localeCompare(a.date))
+        .map(({ name, date, images }) => (
+          <section key={name + date} className="mb-12">
+            <h2 className="text-2xl font-semibold mb-1">{name}</h2>
+            <p className="text-sm text-gray-500 mb-4">{date}</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {images
+                .sort((a, b) => a.index - b.index)
+                .map((img) => (
+                  <div
+                    key={img.index}
+                    className="overflow-hidden rounded-lg shadow-lg hover:scale-105 transition-transform cursor-pointer"
+                    onClick={() => setSelectedImage(img.path)}
+                  >
+                    <Image
+                      src={img.path}
+                      alt={`${name} - ${img.index}`}
+                      width={500}
+                      height={500}
+                      className="object-cover w-full h-full"
+                    />
+                  </div>
+                ))}
+            </div>
+          </section>
+        ))}
 
       {/* Modal / Lightbox */}
       {selectedImage && (
