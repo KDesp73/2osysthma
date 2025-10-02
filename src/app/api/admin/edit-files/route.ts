@@ -46,6 +46,7 @@ export async function POST(req: NextRequest) {
       const commitMessage = `File Manager: Deleted ${pathsToDelete.length} file(s).`;
       try {
         // Use gh.remove to delete the files from the remote repository
+        // FIXME: removing file fails
         await gh.remove(pathsToDelete, commitMessage);
         console.log(`Successfully deleted ${pathsToDelete.length} files.`);
       } catch (err: unknown) {
