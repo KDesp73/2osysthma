@@ -10,7 +10,7 @@ import {
 } from "next-share";
 
 export default function SocialButtons() {
-  const url = "https://simigdalipsychologist.gr";
+  const url = "https://2osysthmakilkis.gr";
   const title = "Check this out!";
 
   return (
