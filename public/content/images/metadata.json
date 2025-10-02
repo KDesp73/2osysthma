@@ -26,5 +26,15 @@
         "index": 0
       }
     ]
+  },
+  {
+    "name": "test",
+    "date": "2025-10-02",
+    "images": [
+      {
+        "path": "/content/images/test/OIP-1970199385.jpg",
+        "index": 0
+      }
+    ]
   }
 ]
