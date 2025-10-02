@@ -179,83 +179,58 @@ export class GithubHelper {
   }
 
   /**
-   * Safely removes files from the repository by creating a new tree based on the latest commit.
-   * It defensively checks if the files exist in the base tree before attempting deletion,
-   * which prevents the 422 BadObjectState error if the file is already gone or the path is slightly wrong.
+   * Removes one or more files in a single commit.
+   * @param paths An array of file paths to remove.
+   * @param commitMsg The message for the commit.
+   * @returns The response from updating the ref.
    */
-  async remove(pathsToDelete: string[], commitMessage: string): Promise<void> {
-    if (pathsToDelete.length === 0) {
-      console.log("No files to delete.");
-      return;
-    }
+  async remove(paths: string[], commitMsg: string) {
+    if (!paths.length) throw new Error("No files specified");
 
-    const latestCommit = await this.getLatestCommit();
-    const baseTreeSha = latestCommit.data.tree.sha;
-
-    // 1. Get the full tree of the latest commit recursively.
-    const { data: baseTree } = await this.octokit.git.getTree({
-      owner: this.owner,
-      repo: this.repo,
-      tree_sha: baseTreeSha,
-      recursive: "true" // CRITICAL: Fetch the entire file structure
-    });
-
-    // Create a Set for fast lookup of existing file paths
-    const existingPaths = new Set(baseTree.tree.map(item => item.path));
-    const deleteInstructions = [];
-    let filesActuallyFound = 0;
-
-    // 2. Filter paths and create deletion instructions (setting SHA to null)
-    for (const remotePath of pathsToDelete) {
-      // The path being tracked by the client is the "public/" version.
-      // The path in the Git Tree (which is what baseTree.tree uses) is relative to the repo root, 
-      // so we strip the 'public/' prefix to match the Git tree paths.
-      const gitPath = remotePath.startsWith('public/') 
-        ? remotePath.substring(7) 
-        : remotePath;
-
-        // Check if the file exists in the current Git tree
-        if (existingPaths.has(gitPath)) {
-          // If found, add the deletion instruction using the Git path
-          deleteInstructions.push({
-            path: gitPath,
-            mode: '100644' as const,
-            sha: null, // Instruction for deletion
-          });
-          filesActuallyFound++;
-        } else {
-          // Skip deletion for files that are already gone or have a mismatched path
-          console.warn(`[GithubHelper] WARNING: File path not found in Git tree: ${gitPath}. Skipping deletion instruction.`);
-        }
-    }
-
-    if (filesActuallyFound === 0) {
-      console.log("None of the requested files for deletion were found in the repository. Skipping commit.");
-      return;
-    }
-
-    // 3. Create a new Tree using the filtered, safe deletion instructions
-    const { data: newTree } = await this.octokit.git.createTree({
-      owner: this.owner,
-      repo: this.repo,
-      base_tree: baseTreeSha,
-      tree: deleteInstructions,
-    });
-
-    // 4. Create the Commit and update the branch reference
-    const { data: commit } = await this.octokit.git.createCommit({
-      owner: this.owner,
-      repo: this.repo,
-      message: commitMessage,
-      tree: newTree.sha,
-      parents: [latestCommit.data.sha],
-    });
-
-    await this.octokit.git.updateRef({
+    // 1. Get the latest commit SHA and its tree SHA (same steps as upload)
+    const latest = await this.octokit.git.getRef({
       owner: this.owner,
       repo: this.repo,
       ref: `heads/${this.branch}`,
-      sha: commit.sha,
+    });
+    const latestCommitSha = latest.data.object.sha;
+
+    const commit = await this.octokit.git.getCommit({
+      owner: this.owner,
+      repo: this.repo,
+      commit_sha: latestCommitSha,
+    });
+
+    // 2. Create a new Tree, based on the latest commit's tree, removing files
+    // To remove a file, you set its SHA to null.
+    const tree = await this.octokit.git.createTree({
+      owner: this.owner,
+      repo: this.repo,
+      base_tree: commit.data.tree.sha,
+      tree: paths.map((p) => ({
+        path: p,
+        // mode and type are still required but the key is sha: null
+        mode: "100644" as const,
+        type: "blob" as const,
+        sha: null, // This is what marks a file for deletion
+      })),
+    });
+
+    // 3. Create a new Commit, pointing to the new Tree
+    const newCommit = await this.octokit.git.createCommit({
+      owner: this.owner,
+      repo: this.repo,
+      message: commitMsg,
+      tree: tree.data.sha,
+      parents: [latestCommitSha],
+    });
+
+    // 4. Update the branch's reference to point to the new commit
+    return this.octokit.git.updateRef({
+      owner: this.owner,
+      repo: this.repo,
+      ref: `heads/${this.branch}`,
+      sha: newCommit.data.sha,
     });
   }
 
