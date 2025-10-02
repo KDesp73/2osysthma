@@ -2,17 +2,22 @@ import { GithubHelper } from "@/lib/GithubHelper";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
-    try {
-        const url = new URL(req.url);
-        const path = url.searchParams.get("path") || undefined;
-        const count = parseInt(url.searchParams.get("count") || "10", 10);
+  try {
+    const url = new URL(req.url);
 
-        const gh = new GithubHelper("KDesp73", "2osysthma");
-        const commits = await gh.getGitHistory(path, count);
+    const path = url.searchParams.get("path") || "";
+    const count = parseInt(url.searchParams.get("count") || "10", 10);
 
-        return NextResponse.json(commits);
-    } catch (err) {
-        console.error(err);
-        return NextResponse.json({ success: false, error: (err as Error).message }, { status: 500 });
-    }
+    const gh = await GithubHelper.create();
+
+    const commits = await gh.getHistory(path, count);
+
+    return NextResponse.json(commits);
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json(
+      { success: false, error: (err as Error).message },
+      { status: 500 },
+    );
+  }
 }

@@ -27,10 +27,10 @@ export default function ChangePasswordForm() {
 
     const data = await res.json();
     if (res.ok && data.success) {
-        await fetch("/api/admin/logout", { method: "POST" });
-        router.push("/admin/login");
+      await fetch("/api/admin/logout", { method: "POST" });
+      router.push("/admin/login");
     } else {
-        setMessage(data.message || data.error);
+      setMessage(data.message || data.error);
     }
   };
 
@@ -58,9 +58,7 @@ export default function ChangePasswordForm() {
         value={confirmPassword}
         onChange={(e) => setConfirmPassword(e.target.value)}
       />
-      <Button type="submit">
-        Change Password
-      </Button>
+      <Button type="submit">Change Password</Button>
       {message && <p className="text-sm mt-2">{message}</p>}
     </form>
   );

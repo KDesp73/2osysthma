@@ -1,9 +1,6 @@
-TODO: proper images in gallery
 TODO: uploading images for blogposts
-TODO: removing images/galleries/files from dashboard
 TODO: uploading links
 TODO: uploading files/links in dashboard
-TODO: favicon
 DONE: remove test blogposts
 DONE: uniform dashboard ui
 DONE: view password
@@ -19,3 +16,6 @@ DONE: markdown help links
 DONE: better markdown editor
 DONE: better footer
 DONE: domain
+DONE: proper images in gallery
+DONE: removing images/galleries/files from dashboard
+DONE: favicon

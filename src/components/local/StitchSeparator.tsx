@@ -1,14 +1,14 @@
-"use client"
+"use client";
 
-import React, { useMemo } from "react"
-import stitchSvg from "@/assets/stitch-1.svg"
+import React, { useMemo } from "react";
+import stitchSvg from "@/assets/stitch-1.svg";
 
 interface SeparatorProps {
-  repeat?: number
-  minAngle?: number
-  maxAngle?: number
-  size?: number
-  className?: string
+  repeat?: number;
+  minAngle?: number;
+  maxAngle?: number;
+  size?: number;
+  className?: string;
 }
 
 export default function StitchSeparator({
@@ -20,8 +20,8 @@ export default function StitchSeparator({
 }: SeparatorProps) {
   const angle = useMemo(
     () => Math.random() * (maxAngle - minAngle) + minAngle,
-    [minAngle, maxAngle]
-  )
+    [minAngle, maxAngle],
+  );
 
   return (
     <div
@@ -29,7 +29,7 @@ export default function StitchSeparator({
       style={{ transform: `rotate(${angle}deg)` }}
     >
       {Array.from({ length: repeat }).map((_, index) => (
-          <img
+        <img
           key={index}
           src={stitchSvg.src}
           alt="stitch"
@@ -40,5 +40,5 @@ export default function StitchSeparator({
         />
       ))}
     </div>
-  )
+  );
 }

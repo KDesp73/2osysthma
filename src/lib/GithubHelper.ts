@@ -1,257 +1,305 @@
-import jwt from "jsonwebtoken";
+import { Octokit } from "@octokit/rest";
+import { App } from "@octokit/app";
 
-type GitHubFileCheckResponse = {
-    sha: string;
-    url: string;
-    content: string;
-    encoding: string;
-};
-
-interface GitHubCommit {
-    sha: string;
-    commit: {
-        author: {
-            name: string;
-            date: string;
-        };
-        message: string;
-    };
-    html_url: string;
+export interface CommitHistoryItem {
+  sha: string;
+  message: string;
+  author: { name: string | null; email: string | null; date: string | null };
+  committer: { name: string | null; email: string | null; date: string | null };
+  html_url: string;
 }
 
-type GitHubInstallationTokenResponse = {
-    token: string;
-    expires_at: string;
-    permissions: Record<string, string>;
-    repository_selection: string;
-};
+export type ContentType = string;
 
-type GitHubInstallation = {
-    id: number;
-    account: {
-        login: string;
-        id: number;
-        type: string; // "User" or "Organization"
-    };
-    repository_selection: string;
-    access_tokens_url: string;
-    repositories_url: string;
-    app_id: number;
-    target_id: number;
-    target_type: string;
-    permissions: Record<string, string>;
-    events: string[];
-    created_at: string;
-    updated_at: string;
-    single_file_name: string | null;
-    has_multiple_single_files?: boolean;
-};
+// A unique symbol used to signal an internal, safe call to the constructor
+const InternalCreate = Symbol("InternalCreate");
 
-
+/**
+ * A helper class for interacting with GitHub repositories using a GitHub App installation.
+ */
 export class GithubHelper {
-    owner: string;
-    repo: string;
-    branch: string;
+  private octokit!: Octokit;
+  private owner!: string;
+  private repo!: string;
+  private branch!: string;
 
-    constructor(owner?: string, repo?: string, branch?: string) {
-        this.owner = owner ?? process.env.GITHUB_REPO_OWNER!;
-        this.repo = repo ?? process.env.GITHUB_REPO_NAME!;
-        this.branch = branch ?? "main";
+  /**
+   * Private constructor to ensure instantiation only happens via the async factory.
+   * @param internalFlag Must be the InternalCreate Symbol for successful creation.
+   */
+  private constructor(internalFlag?: symbol) {
+    if (internalFlag !== InternalCreate) {
+      throw new Error(
+        "Cannot instantiate GithubHelper directly. Use the async factory method `GithubHelper.create()`.",
+      );
+    }
+  }
+
+  /**
+   * Factory method to create an authenticated GithubHelper instance.
+   */
+  static async create(
+    owner?: string,
+    repo?: string,
+    branch?: string,
+  ): Promise<GithubHelper> {
+    const helper = new GithubHelper(InternalCreate);
+
+    // Set up properties
+    helper.owner = owner ?? process.env.GITHUB_USER!;
+    helper.repo = repo ?? process.env.GITHUB_REPO!;
+    helper.branch = branch ?? process.env.GITHUB_BRANCH ?? "main";
+
+    const appId = process.env.GITHUB_APP_ID;
+    const privateKey = process.env.GITHUB_PRIVATE_KEY;
+    const installationId = process.env.GITHUB_INSTALLATION_ID;
+
+    if (!appId || !privateKey || !installationId) {
+      throw new Error(
+        "Missing one or more required GitHub App environment variables: GITHUB_APP_ID, GITHUB_PRIVATE_KEY, or GITHUB_INSTALLATION_ID.",
+      );
     }
 
-    genJwt(): string {
-        const APP_ID = process.env.GITHUB_APP_ID!;
-        const PRIVATE_KEY = process.env.GITHUB_PRIVATE_KEY!.replace(/\\n/g, "\n");
+    // 1. Create the App instance
+    const app = new App({
+      appId: appId,
+      privateKey: privateKey.replace(/\\n/g, "\n"),
+      Octokit: Octokit,
+    });
 
-        const now = Math.floor(Date.now() / 1000);
-        const payload = {
-            iat: now,
-            exp: now + 60, // 1 minute expiration
-            iss: APP_ID,
+    // 2. Get the Installation Octokit instance
+    helper.octokit = await app.getInstallationOctokit(Number(installationId));
+
+    return helper;
+  }
+
+  /**
+   * Retrieves the content of a file from the repository.
+   * @param remotePath The path to the file in the repository.
+   * @returns An object containing the file's SHA and content.
+   */
+  async getFile(remotePath: string) {
+    const { data } = await this.octokit.repos.getContent({
+      owner: this.owner,
+      repo: this.repo,
+      path: remotePath,
+      ref: this.branch,
+    });
+
+    if (!("content" in data) || Array.isArray(data)) {
+      throw new Error("Path is not a file or does not exist");
+    }
+
+    return {
+      sha: data.sha,
+      content: Buffer.from(
+        data.content,
+        data.encoding as BufferEncoding,
+      ).toString("utf-8"),
+    };
+  }
+
+  /**
+   * Uploads or updates multiple files in a single commit.
+   * This uses the Git Data API (Blobs, Trees, Commits) for atomic changes.
+   * @param files An array of objects containing the remote path and content for each file.
+   * @param commitMsg The message for the commit.
+   * @returns The response from updating the ref.
+   */
+  async upload(
+    files: {
+      remotePath: string;
+      content: string;
+      encoding: "utf-8" | "base64";
+    }[],
+    commitMsg: string,
+  ) {
+    // 1. Get the latest commit SHA of the branch
+    const latest = await this.octokit.git.getRef({
+      owner: this.owner,
+      repo: this.repo,
+      ref: `heads/${this.branch}`,
+    });
+    const latestCommitSha = latest.data.object.sha;
+
+    // 2. Get the tree SHA of the latest commit
+    const commit = await this.octokit.git.getCommit({
+      owner: this.owner,
+      repo: this.repo,
+      commit_sha: latestCommitSha,
+    });
+
+    // 3. Create Blobs for all new/updated files (THE FIX IS HERE)
+    const treeItems = await Promise.all(
+      // Destructure 'encoding' from the file object
+      files.map(async ({ remotePath, content, encoding }) => {
+        // Use the explicitly provided content string and encoding.
+        // The Base64 image data is now correctly identified as 'base64'
+        // and the metadata JSON as 'utf-8'.
+        const blob = await this.octokit.git.createBlob({
+          owner: this.owner,
+          repo: this.repo,
+          content: content,
+          encoding: encoding, // <-- CRITICAL: Use the passed-in encoding
+        });
+
+        return {
+          path: remotePath,
+          mode: "100644" as const,
+          type: "blob" as const,
+          sha: blob.data.sha,
         };
-        return jwt.sign(payload, PRIVATE_KEY, { algorithm: "RS256" });
+      }),
+    );
+
+    // 4. Create a new Tree, based on the latest commit's tree, adding the new file Blobs
+    const tree = await this.octokit.git.createTree({
+      owner: this.owner,
+      repo: this.repo,
+      base_tree: commit.data.tree.sha,
+      tree: treeItems,
+    });
+
+    // 5. Create a new Commit, pointing to the new Tree and the latest commit as parent
+    const newCommit = await this.octokit.git.createCommit({
+      owner: this.owner,
+      repo: this.repo,
+      message: commitMsg,
+      tree: tree.data.sha,
+      parents: [latestCommitSha],
+    });
+
+    // 6. Update the branch's reference to point to the new commit
+    return this.octokit.git.updateRef({
+      owner: this.owner,
+      repo: this.repo,
+      ref: `heads/${this.branch}`,
+      sha: newCommit.data.sha,
+    });
+  }
+
+  /**
+   * Removes one or more files in a single commit.
+   * @param paths An array of file paths to remove.
+   * @param commitMsg The message for the commit.
+   * @returns The response from updating the ref.
+   */
+  async remove(paths: string[], commitMsg: string) {
+    if (!paths.length) throw new Error("No files specified");
+
+    // 1. Get the latest commit SHA and its tree SHA (same steps as upload)
+    const latest = await this.octokit.git.getRef({
+      owner: this.owner,
+      repo: this.repo,
+      ref: `heads/${this.branch}`,
+    });
+    const latestCommitSha = latest.data.object.sha;
+
+    const commit = await this.octokit.git.getCommit({
+      owner: this.owner,
+      repo: this.repo,
+      commit_sha: latestCommitSha,
+    });
+
+    // 2. Create a new Tree, based on the latest commit's tree, removing files
+    // To remove a file, you set its SHA to null.
+    const tree = await this.octokit.git.createTree({
+      owner: this.owner,
+      repo: this.repo,
+      base_tree: commit.data.tree.sha,
+      tree: paths.map((p) => ({
+        path: p,
+        // mode and type are still required but the key is sha: null
+        mode: "100644" as const,
+        type: "blob" as const,
+        sha: null, // This is what marks a file for deletion
+      })),
+    });
+
+    // 3. Create a new Commit, pointing to the new Tree
+    const newCommit = await this.octokit.git.createCommit({
+      owner: this.owner,
+      repo: this.repo,
+      message: commitMsg,
+      tree: tree.data.sha,
+      parents: [latestCommitSha],
+    });
+
+    // 4. Update the branch's reference to point to the new commit
+    return this.octokit.git.updateRef({
+      owner: this.owner,
+      repo: this.repo,
+      ref: `heads/${this.branch}`,
+      sha: newCommit.data.sha,
+    });
+  }
+
+  /**
+   * Retrieves the latest commit object for the currently configured branch.
+   * This commit object is required to identify the base tree for creating new changes (uploads, deletes).
+   * * @returns The Octokit commit response object, containing the commit SHA and tree SHA.
+   */
+  async getLatestCommit(): Promise<Awaited<ReturnType<typeof this.octokit.git.getCommit>>> {
+    try {
+      // 1. Get the branch reference to find the SHA of the latest commit
+      const { data: ref } = await this.octokit.git.getRef({
+        owner: this.owner,
+        repo: this.repo,
+        // Fetch the head of the current branch (e.g., 'heads/main')
+        ref: `heads/${this.branch}`, 
+      });
+
+      const commitSha = ref.object.sha;
+
+      // 2. Get the full commit object using the SHA
+      // This object contains the SHA of the commit's corresponding tree, which is needed for modifications.
+      const commit = await this.octokit.git.getCommit({
+        owner: this.owner,
+        repo: this.repo,
+        commit_sha: commitSha,
+      });
+
+      return commit;
+    } catch (error) {
+      console.error("Error retrieving latest commit:", error);
+      throw new Error("Failed to get the latest commit from the repository.");
     }
+  }
 
-    async getInstallationToken(): Promise<string> {
-        const appJwt = this.genJwt();
-        const installationsRes = await fetch(
-            `https://api.github.com/app/installations`,
-                {
-                headers: {
-                    Authorization: `Bearer ${appJwt}`,
-                    Accept: "application/vnd.github+json",
-                },
-            }
-        );
-        const installations = await installationsRes.json() as GitHubInstallation[];
-        if (!installations.length) {
-            throw new Error("No installations found for this app");
-        }
-        const installationId = installations[0].id;
+  /**
+   * Retrieves the commit history for the current branch.
+   * @param remotePath Optional: Only list commits that touch this path.
+   * @param count The number of commits to retrieve (max 100).
+   * @returns A list of commit history items.
+   */
+  async getHistory(
+    remotePath: string = "",
+      count: number = 10,
+  ): Promise<CommitHistoryItem[]> {
+      const { data } = await this.octokit.repos.listCommits({
+        owner: this.owner,
+        repo: this.repo,
+        sha: this.branch, // The commit SHA or branch name to start from
+        path: remotePath, // Filters commits by file path
+        per_page: Math.min(count, 100), // Enforce a max limit
+      });
 
-        const tokenRes = await fetch(
-            `https://api.github.com/app/installations/${installationId}/access_tokens`,
-                {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${appJwt}`,
-                    Accept: "application/vnd.github+json",
-                },
-            }
-        );
-        const tokenData = await tokenRes.json() as GitHubInstallationTokenResponse;
-
-        return tokenData.token;
+      // Map the Octokit response to the simplified type
+      return data.map((commit) => ({
+        sha: commit.sha,
+        message: commit.commit.message,
+        // Note: commit.author and commit.committer might be null if the user is deleted
+        author: {
+          name: commit.commit.author?.name ?? null,
+          email: commit.commit.author?.email ?? null,
+          date: commit.commit.author?.date ?? null,
+        },
+        committer: {
+          name: commit.commit.committer?.name ?? null,
+          email: commit.commit.committer?.email ?? null,
+          date: commit.commit.committer?.date ?? null,
+        },
+        html_url: commit.html_url,
+      }));
     }
-
-    async upload(remotePath: string, commitMsg: string, content: string): Promise<Response>{
-        const installationToken = await this.getInstallationToken();
-        let sha: string | undefined;
-        const checkRes = await fetch(
-            `https://api.github.com/repos/${this.owner}/${this.repo}/contents/${remotePath}?ref=${this.branch}`,
-                {
-                headers: {
-                    Authorization: `Bearer ${installationToken}`,
-                    Accept: "application/vnd.github+json",
-                },
-            }
-        );
-        if (checkRes.ok) {
-            const checkData = await checkRes.json() as GitHubFileCheckResponse;
-            sha = checkData.sha;
-        }
-
-        return fetch(
-            `https://api.github.com/repos/${this.owner}/${this.repo}/contents/${remotePath}`,
-                {
-                method: "PUT",
-                headers: {
-                    Authorization: `Bearer ${installationToken}`,
-                    Accept: "application/vnd.github+json",
-                },
-                body: JSON.stringify({
-                    message: commitMsg,
-                    content: content,
-                    branch: this.branch,
-                    sha,
-                }),
-            }
-        );
-    }
-
-    async removeFile(remotePath: string, commitMsg: string): Promise<Response> {
-        const installationToken = await this.getInstallationToken();
-
-        const url = `https://api.github.com/repos/${this.owner}/${this.repo}/contents/${remotePath}?ref=${this.branch}`;
-            console.log(url);
-        const checkRes = await fetch(
-            url,
-            {
-                headers: {
-                    Authorization: `Bearer ${installationToken}`,
-                    Accept: "application/vnd.github+json",
-                },
-            }
-        );
-
-        if (!checkRes.ok) {
-            throw new Error(`File not found: ${remotePath}`);
-        }
-
-        const checkData = (await checkRes.json()) as GitHubFileCheckResponse;
-        const sha = checkData.sha;
-
-        // Delete request
-        return fetch(
-            `https://api.github.com/repos/${this.owner}/${this.repo}/contents/${remotePath}`,
-                {
-                method: "DELETE",
-                headers: {
-                    Authorization: `Bearer ${installationToken}`,
-                    Accept: "application/vnd.github+json",
-                },
-                body: JSON.stringify({
-                    message: commitMsg,
-                    branch: this.branch,
-                    sha,
-                }),
-            }
-        );
-    }
-
-    async uploadFile(
-        remotePath: string,
-        commitMsg: string,
-        file: Buffer | ArrayBuffer | Uint8Array
-    ): Promise<Response> {
-        let buffer: Buffer;
-        if (file instanceof ArrayBuffer) { 
-            buffer = Buffer.from(file); 
-        } else if (file instanceof Uint8Array) { 
-            buffer = Buffer.from(file); 
-        } else { 
-            buffer = file; 
-        }
-
-        const base64Content = buffer.toString("base64");
-
-        const safePath = remotePath.replace(/ /g, "-");
-
-        return this.upload(safePath, commitMsg, base64Content);
-    }
-
-    async getFile(remotePath: string): Promise<GitHubFileCheckResponse> {
-        const installationToken = await this.getInstallationToken();
-
-        const url = `https://api.github.com/repos/${this.owner}/${this.repo}/contents/${remotePath}?ref=${this.branch}`;
-
-            const res = await fetch(url, {
-            headers: {
-                Authorization: `Bearer ${installationToken}`,
-                Accept: "application/vnd.github+json",
-            },
-        });
-
-        if (!res.ok) {
-            throw new Error(`Failed to fetch file: ${remotePath}, status: ${res.status}`);
-        }
-
-        const data = (await res.json()) as GitHubFileCheckResponse;
-
-        if (data.content && data.encoding === "base64") {
-            data.content = Buffer.from(data.content, "base64").toString("utf-8");
-        }
-
-        return data;
-    }
-
-    async getGitHistory(path?: string, perPage: number = 50, page: number = 1) {
-        const installationToken = await this.getInstallationToken();
-
-        let url = `https://api.github.com/repos/${this.owner}/${this.repo}/commits?sha=${this.branch}&per_page=${perPage}&page=${page}`;
-            if (path) {
-            url += `&path=${encodeURIComponent(path)}`;
-        }
-
-        const res = await fetch(url, {
-            headers: {
-                Authorization: `Bearer ${installationToken}`,
-                Accept: "application/vnd.github+json",
-            },
-        });
-
-        if (!res.ok) {
-            throw new Error(`Failed to fetch git history: ${res.status}`);
-        }
-
-        const commits = await res.json();
-        return commits.map((c: GitHubCommit) => ({
-            sha: c.sha,
-            message: c.commit.message,
-            author: c.commit.author.name,
-            date: c.commit.author.date,
-            url: c.html_url,
-        }));
-    }
-
 }

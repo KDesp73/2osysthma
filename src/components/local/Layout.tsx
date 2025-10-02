@@ -1,24 +1,30 @@
-"use client"
+"use client";
 
-import Image from "next/image"
-import Link from "next/link"
-import { ReactNode } from "react"
-import { Menu } from "lucide-react"
-import Footer from "./Footer"
-import { usePathname } from "next/navigation"
-import AdminLayout from "./AdminLayout"
+import Image from "next/image";
+import Link from "next/link";
+import { ReactNode } from "react";
+import { Menu } from "lucide-react";
+import Footer from "./Footer";
+import { usePathname } from "next/navigation";
+import AdminLayout from "./AdminLayout";
 
 import {
   NavigationMenu,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-} from "@/components/ui/navigation-menu"
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
-import { Button } from "@/components/ui/button"
+} from "@/components/ui/navigation-menu";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
 
 interface LayoutProps {
-  children: ReactNode
+  children: ReactNode;
 }
 
 const routes = [
@@ -27,15 +33,15 @@ const routes = [
   { name: "Εικόνες", href: "/gallery" },
   { name: "Blog", href: "/blog" },
   { name: "Επικοινωνία", href: "/contact" },
-]
+];
 
 export default function Layout({ children }: LayoutProps) {
-  const title = "2ο Σύστημα Προσκόπων Κιλκίς"
-  const path = usePathname()
+  const title = "2ο Σύστημα Προσκόπων Κιλκίς";
+  const path = usePathname();
 
   if (path.startsWith("/admin/")) {
-    if (path === "/admin/login") return children
-    return <AdminLayout>{children}</AdminLayout>
+    if (path === "/admin/login") return children;
+    return <AdminLayout>{children}</AdminLayout>;
   }
 
   return (
@@ -45,7 +51,13 @@ export default function Layout({ children }: LayoutProps) {
         <div className="container mx-auto flex items-center justify-between px-4 py-3">
           {/* Logo */}
           <Link href="/" className="flex items-center">
-            <Image src="/logo.webp" alt={title} width={160} height={40} priority />
+            <Image
+              src="/logo.webp"
+              alt={title}
+              width={160}
+              height={40}
+              priority
+            />
           </Link>
 
           {/* Desktop Links */}
@@ -71,7 +83,12 @@ export default function Layout({ children }: LayoutProps) {
           {/* Mobile Menu */}
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="md:hidden" aria-label="Menu">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="md:hidden"
+                aria-label="Menu"
+              >
                 <Menu className="h-6 w-6" />
               </Button>
             </SheetTrigger>
@@ -101,5 +118,5 @@ export default function Layout({ children }: LayoutProps) {
       {/* Footer */}
       <Footer />
     </div>
-  )
+  );
 }
