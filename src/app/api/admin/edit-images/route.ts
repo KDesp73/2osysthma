@@ -9,7 +9,7 @@ interface MetadataImage {
 
 interface MetadataFolder {
     name: string; // Collection name
-    date: string; // Existing date is preserved
+    date: string; // Existing date is preserved (e.g., 2025-10-25)
     images: Array<MetadataImage>;
 }
 
@@ -21,8 +21,9 @@ interface ImageAction {
 
 /**
  * Helper to group flat image data into the nested structure for metadata.json.
- * This function preserves the original 'date' for existing collections and ensures
- * images are correctly sorted and indexed.
+ * This function preserves the original 'date' for existing collections, ensures
+ * images are correctly sorted and indexed, and enforces a slugified collection
+ * name (spaces to hyphens) in the final image path.
  * * @param flatMetadata The flattened list of all active images from the client.
  * @param existingCollectionsMap Map of existing collection names to their folder data, used for date lookup.
  * @returns The grouped metadata ready for serialization.
@@ -32,11 +33,23 @@ const groupMetadata = (
     existingCollectionsMap: Map<string, MetadataFolder>
 ): MetadataFolder[] => {
     const grouped: Record<string, MetadataFolder> = {};
-    const now = new Date().toISOString();
+    // Generate current date in the requested YYYY-MM-DD format (e.g., 2025-10-02)
+    const now = new Date().toISOString().split('T')[0];
 
     // 1. Group images and determine collection dates
     flatMetadata.forEach(item => {
         const { collection, path, index } = item;
+
+        // SLUGIFY COLLECTION NAME FOR PATH ENFORCEMENT
+        const slugifiedCollection = collection.replace(/\s+/g, '-');
+        
+        // Extract the filename from the received path (e.g., "image.jpg")
+        const parts = path.split('/');
+        const filename = parts[parts.length - 1]; 
+        
+        // Reconstruct the definitive, slugified path
+        const finalPath = `/content/images/${slugifiedCollection}/${filename}`;
+
 
         if (!grouped[collection]) {
             const existingFolder = existingCollectionsMap.get(collection);
@@ -50,8 +63,8 @@ const groupMetadata = (
                 images: [],
             };
         }
-        // Store path and index
-        grouped[collection].images.push({ path, index });
+        // Store the final, sanitized path and index
+        grouped[collection].images.push({ path: finalPath, index });
     });
 
     // 2. Sort images within each folder and finalize the structure
@@ -90,12 +103,13 @@ export async function POST(req: NextRequest) {
         // --- Step 0: Read existing metadata for date preservation ---
         let existingCollectionsMap = new Map<string, MetadataFolder>();
         try {
+            // Using gh.getFile to read the existing metadata content
             const existingContent = await gh.getFile(metadataPath);
             const existingFolders: MetadataFolder[] = JSON.parse(existingContent.content);
             existingCollectionsMap = new Map(existingFolders.map(f => [f.name, f]));
         } catch (e) {
-            // Ignore if file doesn't exist, we'll start with an empty map.
-            console.warn(`Metadata file not found or failed to parse, starting fresh map.`);
+            // This is non-critical. If the file doesn't exist or fails to parse, we assume all are new collections.
+            console.warn(`Metadata file not found or failed to parse, starting with an empty map.`);
         }
 
         // --- Step 1: Handle Deletions ---
@@ -118,7 +132,7 @@ export async function POST(req: NextRequest) {
         const finalCommitMessage = `Image Manager: Update metadata file (Deletions: ${pathsToDelete.length}).`;
 
         try {
-            // Using gh.upload pattern as provided in the user's initial code
+            // Using gh.upload to write the final metadata file
             const metadataRes = await gh.upload(
                 [{
                     remotePath: metadataPath,
