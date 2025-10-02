@@ -1,26 +1,30 @@
 [
-  {
-    "name": "Νέο Πρόγραμμα",
-    "date": "2025-10-02T18:54:42.095Z",
-    "images": [
-      {
-        "path": "/content/images/Νέο Πρόγραμμα/0-Μανίκι-ΑΓΕΛΗ.jpg"
-      },
-      {
-        "path": "/content/images/Νέο Πρόγραμμα/1-Μανίκι-ΟΜΑΔΑ.jpg"
-      },
-      {
-        "path": "/content/images/Νέο Πρόγραμμα/2-Μανίκι-ΚΟΙΝΟΤΗΤΑ.jpg"
-      }
-    ]
-  },
-  {
-    "name": "Ομάδα",
-    "date": "2025-10-02T18:54:42.095Z",
-    "images": [
-      {
-        "path": "/content/images/Ομάδα/Blue-and-Green-Illustrative-Tree-Planting-Action-Poster.jpg"
-      }
-    ]
-  }
+    {
+        "name": "Νεο Πρόγραμμα",
+        "date": "2025-09-28",
+        "images": [
+            {
+                "path": "/content/images/Νέο-Πρόγραμμα/0-Μανίκι-ΑΓΕΛΗ.jpg",
+                "index": 0
+            },
+            {
+                "path": "/content/images/Νέο-Πρόγραμμα/1-Μανίκι-ΟΜΑΔΑ.jpg",
+                "index": 1
+            },
+            {
+                "path": "/content/images/Νέο-Πρόγραμμα/2-Μανίκι-ΚΟΙΝΟΤΗΤΑ.jpg",
+                "index": 2
+            }
+        ]
+    },
+    {
+        "name": "Ομάδα",
+        "date": "2025-09-30",
+        "images": [
+            {
+                "path": "/content/images/Ομάδα/Blue-and-Green-Illustrative-Tree-Planting-Action-Poster.jpg",
+                "index": 0
+            }
+        ]
+    }
 ]
