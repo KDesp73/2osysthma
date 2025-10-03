@@ -19,6 +19,8 @@ import {
   Draggable,
   DropResult,
 } from "@hello-pangea/dnd";
+import { useConfirm } from "./ConfirmContext";
+import { useToast } from "./ToastContext";
 
 // Interfaces
 interface MetadataImage {
@@ -46,6 +48,8 @@ interface ImageUploadPreview {
 }
 
 export default function ImageManager() {
+  const { showToast } = useToast();
+
   const [collections, setCollections] = useState<string[]>([]);
   // Store the current state (modified)
   const [images, setImages] = useState<ImageUploadPreview[]>([]);
@@ -117,7 +121,7 @@ export default function ImageManager() {
 
     let finalCollection = newCollection || collection;
     if (!finalCollection) {
-      alert("Please select or create a collection");
+      showToast("Please select or create a collection", "warning");
       setUploading(false);
       return;
     }
@@ -150,7 +154,7 @@ export default function ImageManager() {
 
       if (!res.ok) throw new Error((await res.json()).error);
 
-      alert("Upload successful!");
+      showToast("Upload successful!", "success");
 
       // Clear and refresh states
       setUploadImages([]);
@@ -164,7 +168,7 @@ export default function ImageManager() {
       // For a complex app, you'd integrate the new uploads into the `images` state
       window.location.reload();
     } catch (err) {
-      alert("Upload failed: " + (err as Error).message);
+      showToast("Upload failed: " + (err as Error).message, "error");
     } finally {
       setUploading(false);
     }
@@ -275,7 +279,7 @@ export default function ImageManager() {
         (item, i) => item.path === originalImages[i]?.originalPath,
       )
     ) {
-      alert("No changes detected.");
+      showToast("No changes detected.", "info");
       setIsSaving(false);
       return;
     }
@@ -290,10 +294,10 @@ export default function ImageManager() {
 
       if (!res.ok) throw new Error((await res.json()).error);
 
-      alert("Changes saved! Refreshing...");
+      showToast("Changes saved! Refreshing...", "success");
       window.location.reload(); // Full refresh to sync state
     } catch (err) {
-      alert("Save failed: " + (err as Error).message);
+      showToast("Save failed: " + (err as Error).message, "error");
     } finally {
       setIsSaving(false);
     }

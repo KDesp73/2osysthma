@@ -4,6 +4,9 @@ import Layout from "@/components/local/Layout";
 import { Analytics } from "@vercel/analytics/next";
 import Seo from "@/components/local/Seo";
 import { Noto_Serif } from "next/font/google";
+import { ConfirmProvider } from "@/components/local/ConfirmContext";
+import { Suspense } from "react";
+import { ToastProvider } from "@/components/local/ToastContext";
 
 const font = Noto_Serif({
   subsets: ["latin"],
@@ -33,10 +36,16 @@ export default function RootLayout({
         canonicalUrl="https://2osysthmakilkis.gr"
       />
       <body className={`${font.variable} antialiased`}>
+        <Suspense>
+        <ConfirmProvider>
+        <ToastProvider>
         <Layout>
           {children}
           <Analytics />
         </Layout>
+        </ToastProvider>
+        </ConfirmProvider>
+        </Suspense>
       </body>
     </html>
   );
