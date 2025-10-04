@@ -32,7 +32,7 @@ export default function DashboardUseful() {
     },
 {
   name: "Νέο Πρόγραμμα",
-  description: Drive με αρχεία για το νέο πρόγραμμα",
+  description: "Drive με αρχεία για το νέο πρόγραμμα",
   href: "https://drive.google.com/drive/folders/167Wwxl-t-fZGH6EsIExfq0fT5t5pAUDU"
 }
   ];
