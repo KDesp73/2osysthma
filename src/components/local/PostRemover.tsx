@@ -3,8 +3,13 @@
 import { useEffect, useState } from "react";
 import { Post } from "@/lib/posts";
 import { Button } from "../ui/button";
+import { useToast } from "./ToastContext";
+import { useConfirm } from "./ConfirmContext";
 
 export default function PostRemover() {
+  const { showToast } = useToast();
+  const confirm = useConfirm();
+
   const [posts, setPosts] = useState<Post[]>([]);
 
   useEffect(() => {
@@ -21,9 +26,12 @@ export default function PostRemover() {
   }, []);
 
   const handleDelete = async (title: string) => {
-    const confirmed = window.confirm(
-      `Are you sure you want to delete "${title}"?`,
-    );
+    const confirmed = await confirm({
+      title: "Delete?",
+      message: `Are you sure you want to delete "${title}"?`,
+      confirmText: "Delete",
+      cancelText: "Cancel"
+    });
     if (!confirmed) return;
 
     try {
@@ -46,7 +54,7 @@ export default function PostRemover() {
       setPosts((prev) => prev.filter((b) => b.title !== title));
     } catch (err) {
       console.error("Delete failed:", err);
-      alert("Failed to delete blog. Please try again.");
+      showToast("Failed to delete blog. Please try again.", "error");
     }
   };
 
@@ -64,10 +72,10 @@ export default function PostRemover() {
             >
               <span>{blog.title}</span>
               <Button
+                variant={"destructive"}
                 onClick={async () => {
                   await handleDelete(blog.title);
                 }}
-                className="px-3 py-1 text-sm text-white bg-red-500 rounded-lg hover:bg-red-600"
               >
                 Delete
               </Button>

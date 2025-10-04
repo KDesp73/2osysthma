@@ -263,8 +263,8 @@ export default function ImageManager() {
 
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
-      <Tabs defaultValue="upload">
-        <TabsList>
+      <Tabs defaultValue="manage" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 rounded-lg bg-muted p-1">
           <TabsTrigger value="upload">Upload</TabsTrigger>
           <TabsTrigger value="manage">
             Manage ({activeImages.length})

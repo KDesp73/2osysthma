@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { X } from "lucide-react";
+import { useToast } from "../ToastContext";
 
 interface PendingFile {
   file: File;
@@ -14,6 +15,7 @@ interface PendingFile {
 }
 
 export default function FileUpload() {
+  const { showToast } = useToast();
   const [files, setFiles] = useState<PendingFile[]>([]);
   const [uploading, setUploading] = useState(false);
 
@@ -78,18 +80,18 @@ export default function FileUpload() {
       const data = await res.json();
       if (!data.success) throw new Error(data.error || "Upload failed");
 
-      alert("Upload successful!");
+      showToast("Upload successful!", "success");
       setFiles([]);
     } catch (err) {
       console.error(err);
-      alert("Upload failed");
+      showToast("Upload failed", "error");
     } finally {
       setUploading(false);
     }
   }
 
   return (
-    <div className="p-6 max-w-2xl mx-auto">
+    <div className="p-6 md:p-10 min-h-screen space-y-8">
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl font-bold">Upload File</CardTitle>

@@ -1,41 +1,40 @@
 "use client";
 
 import { useEffect, useState } from "react";
-// Assuming Tabs components exist at this path
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import FileUpload from "./FileUpload"; // Existing black-box component
-import FileManage from "./FileManage"; // Component created in previous turn
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
+import { Card, CardContent } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
 
-// --- New Core Interfaces for Files ---
-// Matches the structure of /content/files/metadata.json
+import FileUpload from "./FileUpload";
+import FileManage from "./FileManage";
+
+// --- Core Interfaces ---
 export interface FileMetadata {
   filename: string;
   title: string;
   description: string;
 }
-// ------------------------------------
+// ------------------------
 
 export default function FileManager() {
-  // Stores the initial files loaded from metadata.json
   const [initialFiles, setInitialFiles] = useState<FileMetadata[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // 1. Load existing files metadata
+  // Load metadata on mount
   useEffect(() => {
     (async () => {
       try {
-        // Fetch file metadata instead of image metadata
         const metaRes = await fetch("/content/files/metadata.json");
         const data: FileMetadata[] = await metaRes.json();
-
         setInitialFiles(data);
       } catch (e) {
-        console.error(
-          "Failed to load file metadata (assuming file not created yet):",
-          e,
-        );
-        // Handle case where metadata file doesn't exist or fails to parse
+        console.error("Failed to load metadata:", e);
         setInitialFiles([]);
       } finally {
         setIsLoading(false);
@@ -43,25 +42,21 @@ export default function FileManager() {
     })();
   }, []);
 
-  // 2. Handle Save Changes from FileManage component
+  // Save handler
   const handleSaveMetadata = async (
     newMetadata: FileMetadata[],
     pathsToDelete: string[],
   ) => {
     setIsSaving(true);
 
-    // Map filenames to the remote paths required for deletion (e.g., public/content/files/...)
     const actions = pathsToDelete.map((filename) => ({
       type: "delete",
-      // Assuming files are stored in public/content/files/
       path: `public/content/files/${filename}`,
     }));
 
-    // The new metadata is the final list of active files with updated title/description
-    // We add an index field for the backend API for consistency, and a generic path.
     const newFileMetadata = newMetadata.map((file, index) => ({
       ...file,
-      index: index,
+      index,
       path: `/content/files/${file.filename}`,
     }));
 
@@ -72,13 +67,7 @@ export default function FileManager() {
         body: JSON.stringify({ actions, newMetadata: newFileMetadata }),
       });
 
-      if (!res.ok)
-        throw new Error(
-          (await res.json()).error || "Unknown error during save.",
-        );
-
-      console.log("File metadata and deletions saved! Refreshing...");
-      // Reload the page to reset state and show the new initial files
+      if (!res.ok) throw new Error((await res.json()).error || "Unknown error");
       window.location.reload();
     } catch (err) {
       console.error("Save failed:", (err as Error).message);
@@ -89,42 +78,24 @@ export default function FileManager() {
 
   if (isLoading) {
     return (
-      <div className="p-10 text-center text-gray-500 font-semibold">
-        Loading files...
+      <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+        <Loader2 className="w-6 h-6 animate-spin mb-3" />
+        <p className="text-sm font-medium">Loading Files...</p>
       </div>
     );
   }
 
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
-      <h1 className="text-4xl font-extrabold text-gray-900 mb-4">
-        Διαχειριστής Αρχείων
-      </h1>
-      <p className="text-gray-600">
-        Ανεβάστε νέα έγγραφα ή διαχειριστείτε τα μεταδεδομένα και τις διαγραφές
-        των υπαρχόντων αρχείων.
-      </p>
-
       <Tabs defaultValue="manage" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 bg-gray-100 rounded-xl p-1">
-          <TabsTrigger
-            value="upload"
-            className="font-semibold text-lg data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-blue-600 transition duration-200"
-          >
-            Ανέβασμα Νέων Αρχείων
-          </TabsTrigger>
-          <TabsTrigger
-            value="manage"
-            className="font-semibold text-lg data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-blue-600 transition duration-200"
-          >
-            Διαχείριση Υπαρχόντων ({initialFiles.length})
+        <TabsList className="grid w-full grid-cols-2 rounded-lg bg-muted p-1">
+          <TabsTrigger value="upload">Upload</TabsTrigger>
+          <TabsTrigger value="manage">
+            Manage ({initialFiles.length})
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent
-          value="upload"
-          className="mt-6 border p-6 rounded-xl bg-white shadow-lg"
-        >
+        <TabsContent value="upload" className="mt-6">
           <FileUpload />
         </TabsContent>
 
