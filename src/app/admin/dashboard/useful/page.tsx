@@ -30,6 +30,11 @@ export default function DashboardUseful() {
         "Σύστημα Διαχείρισης Ηλεκτρονικών Υπηρεσιών του Σώματος Ελλήνων Προσκόπων",
       href: "https://e-sep.eu/app/sso/web/",
     },
+{
+  name: "Νέο Πρόγραμμα",
+  description: Drive με αρχεία για το νέο πρόγραμμα",
+  href: "https://drive.google.com/drive/folders/167Wwxl-t-fZGH6EsIExfq0fT5t5pAUDU"
+}
   ];
 
   const files: ResourceItem[] = [];
