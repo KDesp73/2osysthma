@@ -33,23 +33,15 @@
     "images": [
       {
         "path": "/content/images/2024-25/IMG_1129.jpeg",
-        "index": 0
-      },
-      {
-        "path": "/content/images/2024-25/IMG_1232.jpeg",
-        "index": 1
+        "index": 4
       },
       {
         "path": "/content/images/2024-25/IMG_1056.jpeg",
-        "index": 2
+        "index": 5
       },
       {
         "path": "/content/images/2024-25/compressed_IMG_1330.jpeg",
-        "index": 3
-      },
-      {
-        "path": "/content/images/2024-25/IMG_8083.jpeg",
-        "index": 4
+        "index": 6
       }
     ]
   }
