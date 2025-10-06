@@ -97,6 +97,10 @@ export default function ImageManager() {
     setUploadImages((prev) => [...prev, ...filesArray]);
   };
 
+  function removeImage(index: number) {
+    setUploadImages((prev) => prev.filter((_, i) => i !== index));
+  }
+
   const handleUpload = async () => {
     if (!uploadImages.length) return;
     setUploading(true);
@@ -281,6 +285,7 @@ export default function ImageManager() {
             uploadImages={uploadImages}
             handleFilesChange={handleFilesChange}
             handleUpload={handleUpload}
+            removeImage={removeImage}
             uploading={uploading}
           />
         </TabsContent>
