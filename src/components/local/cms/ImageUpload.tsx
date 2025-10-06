@@ -9,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { X } from "lucide-react"; // remove icon
 import { ImageUploadPreview } from "./ImageManager";
 
 interface ImageUploadProps {
@@ -20,6 +21,7 @@ interface ImageUploadProps {
   uploadImages: ImageUploadPreview[];
   handleFilesChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleUpload: () => Promise<void>;
+  removeImage: (index: number) => void;
   uploading: boolean;
 }
 
@@ -32,6 +34,7 @@ export default function ImageUpload({
   uploadImages,
   handleFilesChange,
   handleUpload,
+  removeImage,
   uploading,
 }: ImageUploadProps) {
   return (
@@ -39,6 +42,7 @@ export default function ImageUpload({
       <CardHeader>
         <CardTitle className="text-2xl font-bold">Upload Images</CardTitle>
       </CardHeader>
+
       <CardContent className="space-y-6">
         {/* Collection Selection */}
         <div className="space-y-4">
@@ -49,7 +53,7 @@ export default function ImageUpload({
               onValueChange={(val) => {
                 setCollection(val);
                 setNewCollection("");
-              }} // Clear new collection when selecting existing
+              }}
             >
               <SelectTrigger id="collection">
                 <SelectValue placeholder="-- Select existing collection --" />
@@ -63,6 +67,7 @@ export default function ImageUpload({
               </SelectContent>
             </Select>
           </div>
+
           <div>
             <Label htmlFor="new-collection">Or create new collection</Label>
             <Input
@@ -73,7 +78,7 @@ export default function ImageUpload({
               onChange={(e) => {
                 setNewCollection(e.target.value);
                 setCollection("");
-              }} // Clear existing collection when starting new
+              }}
             />
           </div>
         </div>
@@ -94,14 +99,25 @@ export default function ImageUpload({
         {uploadImages.length > 0 && (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {uploadImages.map((img, i) => (
-              <Card key={i} className="overflow-hidden">
-                <img
-                  src={img.preview}
-                  alt={img.name}
-                  className="object-cover w-full h-32"
-                />
-                <p className="text-sm text-center p-2 truncate">{img.name}</p>
-              </Card>
+              <div key={i} className="relative group">
+                <Card className="overflow-hidden">
+                  <img
+                    src={img.preview}
+                    alt={img.name}
+                    className="object-cover w-full h-32"
+                  />
+                  <p className="text-sm text-center p-2 truncate">{img.name}</p>
+                </Card>
+
+                {/* Remove button */}
+                <button
+                  onClick={() => removeImage(i)}
+                  className="absolute top-2 right-2 bg-black/50 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition"
+                  title="Remove image"
+                >
+                  <X size={16} />
+                </button>
+              </div>
             ))}
           </div>
         )}
