@@ -20,7 +20,12 @@ export default function GalleryPage() {
   useEffect(() => {
     fetch("/content/images/metadata.json")
       .then((res) => res.json())
-      .then((data) => setCollections(data))
+      .then((data: MetadataFolder[]) => {
+        const sorted = [...data].sort(
+          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+        );
+        setCollections(sorted);
+      })
       .catch((err) => console.error("Failed to load metadata.json", err));
   }, []);
 

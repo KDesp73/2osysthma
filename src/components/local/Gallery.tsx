@@ -41,7 +41,6 @@ export default function Gallery({ collections }: Props) {
     <>
       <Title name="Gallery" />
       {collections
-        .sort((a, b) => b.date.localeCompare(a.date))
         .map(({ name, date, images }) => (
           <section key={name + date} className="mb-12">
             <h2 className="text-2xl font-semibold mb-1">{name}</h2>
