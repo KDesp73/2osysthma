@@ -24,6 +24,10 @@
       {
         "path": "/content/images/Ομάδα/Blue-and-Green-Illustrative-Tree-Planting-Action-Poster.jpg",
         "index": 3
+      },
+      {
+        "path": "/content/images/Ομάδα/Blue_Retro_Cocktail_Party_Invitation_Flyer.jpeg",
+        "index": 1
       }
     ]
   },
@@ -33,11 +37,19 @@
     "images": [
       {
         "path": "/content/images/2024-25/IMG_1129.jpeg",
-        "index": 0
+        "index": 4
       },
       {
-        "path": "/content/images/2024-25/IMG_1232.jpeg",
-        "index": 1
+        "path": "/content/images/2024-25/IMG_1056.jpeg",
+        "index": 5
+      },
+      {
+        "path": "/content/images/2024-25/compressed_IMG_1330.jpeg",
+        "index": 6
+      },
+      {
+        "path": "/content/images/2024-25/IMG_1276.jpeg",
+        "index": 3
       }
     ]
   }
