@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import matter from "gray-matter";
 import { ContentType, GithubHelper } from "@/lib/GithubHelper";
-import { createSlug } from "@/lib/posts";
 import {
   CollectionMetadata,
   FileMetadata,
   ImageMetadata,
 } from "@/lib/metadata";
+import { slugify } from "@/lib/utils";
 
 interface UploadItem {
   type: "blog" | "file" | "image";
@@ -18,6 +18,7 @@ interface UploadItem {
   name?: string; // filename
   data?: string; // base64 string
   collection?: string; // for images
+  path?: string;
 }
 
 // --- BLOG ---
@@ -25,7 +26,7 @@ async function blog(item: UploadItem) {
   if (!item.title || !item.content)
     throw new Error("Blog items must have title and content");
 
-  const slug = createSlug(item.title);
+  const slug = slugify(item.title);
   if (!slug) throw new Error("Cannot generate slug from title");
 
   const frontmatter = matter.stringify(item.content, {
@@ -40,7 +41,7 @@ async function blog(item: UploadItem) {
   return {
     commitMsg: `Posted '${item.title}'`,
     file: {
-      remotePath: `public/content/blog/${slug}.md`,
+      remotePath: item.path ? item.path : `public/content/blog/${slug}.md`,
       content: frontmatter,
       encoding: "utf-8",
     },
@@ -67,7 +68,7 @@ async function file(item: UploadItem, existingMetadata: FileMetadata[] = []) {
   return {
     commitMsg: `Uploaded file '${item.name}'`,
     file: {
-      remotePath: `public/content/files/${item.name}`,
+      remotePath: item.path ? item.path : `public/content/files/${item.name}`,
       content: item.data,
       encoding: "base64",
     },
@@ -82,10 +83,32 @@ async function image(
 ) {
   if (!item.name || !item.data)
     throw new Error("Image items must have name and data");
-  if (!item.collection) throw new Error("Image items must have a collection");
 
   const metadata: CollectionMetadata[] = [...existingMetadata];
 
+  // --- CASE 1: Custom path mode (manual upload, no metadata tracking) ---
+  if (item.path) {
+    // Normalize path (ensure it starts with "public/")
+    const remotePath = item.path.startsWith("public/")
+      ? item.path
+      : `public/${item.path.replace(/^\/+/, "")}`;
+
+    return {
+      commitMsg: `Uploaded image '${item.name}'`,
+      file: {
+        remotePath,
+        content: item.data,
+        encoding: "base64",
+      },
+      metadata, // unchanged (we don’t track metadata outside content/images)
+    } as ReturnType;
+  }
+
+  // --- CASE 2: Collection-based mode (standard CMS behavior) ---
+  if (!item.collection)
+    throw new Error("Image items must have either a collection or a path");
+
+  // Find or create collection metadata
   let collection = metadata.find((c) => c.name === item.collection);
   if (!collection) {
     collection = {
@@ -97,19 +120,24 @@ async function image(
   }
 
   const nextIndex = collection.images.length;
+
+  // Build the default public and remote paths
+  const publicPath = `/content/images/${item.collection}/${item.name}`;
+  const remotePath = `public${publicPath}`;
+
   collection.images.push({
-    path: `/content/images/${item.collection}/${item.name}`,
+    path: publicPath,
     index: nextIndex,
   });
 
   return {
     commitMsg: `Uploaded image '${item.name}'`,
     file: {
-      remotePath: `public/content/images/${item.collection}/${item.name}`,
+      remotePath,
       content: item.data,
       encoding: "base64",
     },
-    metadata: metadata,
+    metadata,
   } as ReturnType;
 }
 

@@ -1,7 +1,7 @@
-TODO: uploading images for blogposts
 TODO: uploading links
 TODO: uploading files/links in dashboard
-TODO: coherent ui design for dashboard
+TODO: 500 error when entering non-existing post in the url
+TODO: Use tursodb more for metadata etc
 DONE: remove test blogposts
 DONE: uniform dashboard ui
 DONE: view password
@@ -20,3 +20,5 @@ DONE: domain
 DONE: proper images in gallery
 DONE: removing images/galleries/files from dashboard
 DONE: favicon
+DONE: coherent ui design for dashboard
+DONE: uploading images for blogposts

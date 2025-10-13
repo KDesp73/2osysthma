@@ -27,6 +27,7 @@ import "@mdxeditor/editor/style.css";
 import style from "@/styles/post.module.css";
 import Link from "next/link";
 import { Info } from "lucide-react";
+import { slugify, uploadContent, UploadItem } from "@/lib/utils";
 
 function MyToolbar() {
   return (
@@ -48,9 +49,24 @@ const PLUGINS = [
   linkPlugin(),
   linkDialogPlugin(),
   imagePlugin({
-    imageUploadHandler: () => {
-      // TODO: upload image to a seperate folder and use the resulting url
-      return Promise.resolve("https://picsum.photos/200/300");
+    imageUploadHandler: async (img) => {
+      const arrayBuffer = await img!.arrayBuffer();
+      const uint8 = new Uint8Array(arrayBuffer);
+      const binary = Array.from(uint8, (b) => String.fromCharCode(b)).join(
+        "",
+      );
+      const base64 = btoa(binary);
+
+      const path =  `public/content/blog/assets/${slugify(img.name)}`;
+
+      await uploadContent([{
+        type: "image",
+        name: slugify(img.name),
+        path,
+        data: base64,
+      } as UploadItem]);
+      console.log("Uploaded blog asset");
+      return Promise.resolve(`https://github.com/KDesp73/2osysthma/raw/refs/heads/main/${path}`);
     },
   }),
   tablePlugin(),

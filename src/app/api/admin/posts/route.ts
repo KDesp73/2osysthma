@@ -1,12 +1,12 @@
 import { GithubHelper } from "@/lib/GithubHelper";
-import { createSlug } from "@/lib/posts";
+import { slugify } from "@/lib/utils";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function DELETE(req: NextRequest) {
   try {
     const body = await req.json();
     const { title } = body;
-    const slug = createSlug(title);
+    const slug = slugify(title);
 
     const gh = await GithubHelper.create();
 
