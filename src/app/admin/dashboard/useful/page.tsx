@@ -22,7 +22,7 @@ export default function DashboardUseful() {
     {
       name: "Φωτογραφίες Συστήματος",
       description: "",
-      href: "https://drive.google.com/drive/folders/18qYat54ML9BHkgOKldZ6coskDTBX1vBs",
+      href: "https://drive.google.com/drive/u/3/folders/14dzXD8R6LLkII-g7N0l7CrNhe6_j_o_Y",
     },
     {
       name: "e-sep",
