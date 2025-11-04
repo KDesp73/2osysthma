@@ -114,4 +114,17 @@
     text-decoration: line-through;
     color: #9ca3af; /* slate-400 */
   }
+
+  img {
+      display: block;
+      max-width: 60%;
+      height: auto;
+      margin: 1em auto;
+  }
+
+  @media (max-width: 768px) {
+      img {
+          max-width: 100%;
+      }
+  }
 }
