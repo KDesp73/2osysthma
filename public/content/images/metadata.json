@@ -27,15 +27,11 @@
       },
       {
         "path": "/content/images/Ομάδα/Blue_Retro_Cocktail_Party_Invitation_Flyer.jpeg",
-        "index": 2
+        "index": 4
       },
       {
         "path": "/content/images/Ομάδα/JOTA-JOTI.jpg",
-        "index": 1
-      },
-      {
-        "path": "/content/images/Ομάδα/IMG_8226.jpeg",
-        "index": 3
+        "index": 5
       }
     ]
   },
@@ -45,19 +41,19 @@
     "images": [
       {
         "path": "/content/images/2024-25/IMG_1129.jpeg",
-        "index": 4
-      },
-      {
-        "path": "/content/images/2024-25/IMG_1056.jpeg",
-        "index": 5
-      },
-      {
-        "path": "/content/images/2024-25/compressed_IMG_1330.jpeg",
         "index": 6
       },
       {
+        "path": "/content/images/2024-25/IMG_1056.jpeg",
+        "index": 7
+      },
+      {
+        "path": "/content/images/2024-25/compressed_IMG_1330.jpeg",
+        "index": 8
+      },
+      {
         "path": "/content/images/2024-25/IMG_1276.jpeg",
-        "index": 3
+        "index": 9
       }
     ]
   }
