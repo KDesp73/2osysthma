@@ -23,35 +23,27 @@
     "images": [
       {
         "path": "/content/images/Ομάδα/Blue-and-Green-Illustrative-Tree-Planting-Action-Poster.jpg",
-        "index": 6
-      },
-      {
-        "path": "/content/images/Ομάδα/Blue_Retro_Cocktail_Party_Invitation_Flyer.jpeg",
-        "index": 5
-      },
-      {
-        "path": "/content/images/Ομάδα/JOTA-JOTI.jpg",
-        "index": 4
-      },
-      {
-        "path": "/content/images/Ομάδα/568235174_1127520472480569_4264886558596481070_n.jpg",
         "index": 3
       },
       {
-        "path": "/content/images/Ομάδα/582050197_1326389138743293_8377500386994430951_n.png",
+        "path": "/content/images/Ομάδα/Blue_Retro_Cocktail_Party_Invitation_Flyer.jpeg",
         "index": 4
       },
       {
-        "path": "/content/images/Ομάδα/ΣΑΒΒΑΤΟ_2211_1700.png",
+        "path": "/content/images/Ομάδα/JOTA-JOTI.jpg",
         "index": 5
       },
       {
-        "path": "/content/images/Ομάδα/Συνέντευξη_μ_ένα_έργο_τέχνης.jpg",
+        "path": "/content/images/Ομάδα/568235174_1127520472480569_4264886558596481070_n.jpg",
         "index": 6
       },
       {
-        "path": "/content/images/Ομάδα/Συνέντευξη_μ_ένα_έργο_τέχνης.jpg",
+        "path": "/content/images/Ομάδα/582050197_1326389138743293_8377500386994430951_n.png",
         "index": 7
+      },
+      {
+        "path": "/content/images/Ομάδα/ΣΑΒΒΑΤΟ_2211_1700.png",
+        "index": 8
       }
     ]
   },
@@ -61,19 +53,19 @@
     "images": [
       {
         "path": "/content/images/2024-25/IMG_1129.jpeg",
-        "index": 6
+        "index": 9
       },
       {
         "path": "/content/images/2024-25/IMG_1056.jpeg",
-        "index": 7
+        "index": 10
       },
       {
         "path": "/content/images/2024-25/compressed_IMG_1330.jpeg",
-        "index": 8
+        "index": 11
       },
       {
         "path": "/content/images/2024-25/IMG_1276.jpeg",
-        "index": 9
+        "index": 12
       }
     ]
   }
