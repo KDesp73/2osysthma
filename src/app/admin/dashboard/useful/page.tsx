@@ -15,6 +15,11 @@ export default function DashboardUseful() {
       href: "https://drive.google.com/drive/u/2/folders/1iEOhUoxajRh0Ghv_Jz36p0jbs0Sv2Yw4",
     },
     {
+      name: "2η Ομάδα",
+      description: "Google Drive",
+      href: "https://drive.google.com/drive/folders/1jvuLRoaTdhAizOuXmyaO1d8E728-OdqZ"
+    },
+    {
       name: "Ονομαστική Κατάσταση Συστήματος",
       description: "",
       href: "https://docs.google.com/spreadsheets/d/1NafMecUgSjX426n4YWxJXKmGbzJQnOcUj855VFdxnaE/edit?gid=0#gid=0",
@@ -30,11 +35,11 @@ export default function DashboardUseful() {
         "Σύστημα Διαχείρισης Ηλεκτρονικών Υπηρεσιών του Σώματος Ελλήνων Προσκόπων",
       href: "https://e-sep.eu/app/sso/web/",
     },
-{
-  name: "Νέο Πρόγραμμα",
-  description: "Drive με αρχεία για το νέο πρόγραμμα",
-  href: "https://drive.google.com/drive/folders/167Wwxl-t-fZGH6EsIExfq0fT5t5pAUDU"
-}
+    {
+      name: "Νέο Πρόγραμμα",
+      description: "Drive με αρχεία για το νέο πρόγραμμα",
+      href: "https://drive.google.com/drive/folders/167Wwxl-t-fZGH6EsIExfq0fT5t5pAUDU"
+    },
   ];
 
   const files: ResourceItem[] = [];
