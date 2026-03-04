@@ -27,19 +27,15 @@
       },
       {
         "path": "/content/images/Ομάδα/Χρονομηχανή.jpg",
-        "index": 1
+        "index": 4
       },
       {
         "path": "/content/images/Ομάδα/31_ΙΑΝΟΥΑΡΙΟΥ.jpg",
-        "index": 2
+        "index": 5
       },
       {
         "path": "/content/images/Ομάδα/Αφίσα_7-2-2026.jpg",
-        "index": 3
-      },
-      {
-        "path": "/content/images/Ομάδα/Αφίσα_0703.jpg",
-        "index": 4
+        "index": 6
       }
     ]
   },
@@ -49,19 +45,19 @@
     "images": [
       {
         "path": "/content/images/2024-25/IMG_1129.jpeg",
-        "index": 4
+        "index": 7
       },
       {
         "path": "/content/images/2024-25/IMG_1056.jpeg",
-        "index": 5
+        "index": 8
       },
       {
         "path": "/content/images/2024-25/compressed_IMG_1330.jpeg",
-        "index": 6
+        "index": 9
       },
       {
         "path": "/content/images/2024-25/IMG_1276.jpeg",
-        "index": 7
+        "index": 10
       }
     ]
   },
@@ -70,8 +66,8 @@
     "date": "2026-01-21",
     "images": [
       {
-        "path": "/content/images/Εκδηλώσεις -  Δράσεις/498eb7a5-15e5-4a85-8eee-a34e04fad77f.jpg",
-        "index": 0
+        "path": "/content/images/Εκδηλώσεις---Δράσεις/498eb7a5-15e5-4a85-8eee-a34e04fad77f.jpg",
+        "index": 11
       }
     ]
   }
